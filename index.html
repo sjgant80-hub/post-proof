@@ -1,0 +1,548 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>post-proof</title>
+<meta name="description" content="The receipt-gate for AI-native marketing: a post ships only if its build-receipt backs every claim. No LLM judge.">
+<style>
+  :root{
+    --bg:#0e0f10; --panel:#15181a; --panel2:#1b1f22; --ink:#eceae5; --mut:#99a0a6;
+    --line:#282d31; --mint:#7ee7c7; --gold:#d9b26a; --bad:#e5766b; --good:#7ee7c7;
+    --serif:Georgia,'Iowan Old Style','Times New Roman',serif;
+    --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:var(--serif);line-height:1.5;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding-block:0;padding-inline:20px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--mint);margin:0}
+  h1{font-size:clamp(34px,6vw,60px);line-height:1.04;margin:.35em 0 .3em;font-weight:600;
+    text-wrap:balance;letter-spacing:-.01em}
+  h1 .a{color:var(--mint)}
+  h2{font-size:clamp(22px,3.4vw,30px);margin:0 0 .5em;font-weight:600;letter-spacing:-.01em}
+  .lede{font-size:clamp(16px,2.1vw,19px);color:#cfccc6;max-width:60ch}
+  .lede b{color:var(--ink)}
+  section{border-top:1px solid var(--line);padding-block:44px}
+  header.hero{padding-block:56px 40px}
+  .mut{color:var(--mut)}
+  .mono{font-family:var(--mono)}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card .big{font-family:var(--mono);font-size:26px;color:var(--gold);font-weight:700}
+  .card .lab{font-weight:600;margin:.3em 0 .2em}
+  .card .sub{color:var(--mut);font-size:14px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+  button{font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--panel2);
+    border:1px solid var(--line);border-radius:9px;padding:9px 13px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--mint);color:#fff}
+  button.go{background:var(--mint);color:#08130f;border-color:var(--mint);font-weight:700}
+  button.go:hover{filter:brightness(1.08);color:#08130f}
+  label{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--mut);margin:14px 0 5px}
+  textarea{width:100%;background:#0b0d0e;color:var(--ink);border:1px solid var(--line);
+    border-radius:10px;padding:12px;font-family:var(--mono);font-size:13px;line-height:1.5;resize:vertical}
+  .out{margin-top:14px}
+  .verdict{border-radius:12px;padding:16px 18px;border:1px solid var(--line);background:var(--panel)}
+  .verdict.pass{border-color:#2f6b57;background:#12211c}
+  .verdict.fail{border-color:#6b3630;background:#201412}
+  .verdict h3{margin:0;font-family:var(--mono);font-size:15px;letter-spacing:.02em}
+  .verdict.pass h3{color:var(--good)} .verdict.fail h3{color:var(--bad)}
+  .claim{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line);
+    font-size:14px}
+  .claim:first-of-type{border-top:0}
+  .tag{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:6px;border:1px solid var(--line);
+    color:var(--mut);white-space:nowrap;margin-top:1px}
+  .claim .txt b{font-family:var(--mono);color:var(--ink)}
+  .claim.no .mk{color:var(--bad)} .claim.yes .mk{color:var(--good)}
+  .mk{font-family:var(--mono);font-weight:700}
+  .seal{font-family:var(--mono);font-size:13px;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:14px 16px;margin-top:12px;overflow-x:auto}
+  .seal .k{color:var(--mut)} .seal .v{color:var(--ink)} .seal .h{color:var(--gold);word-break:break-all}
+  .stamp{font-family:var(--mono);font-size:13px;font-weight:700}
+  .stamp.ok{color:var(--good)} .stamp.no{color:var(--bad)}
+  ul.plain{list-style:none;padding:0;margin:0}
+  ul.plain li{padding:10px 0;border-top:1px solid var(--line);color:#cfccc6;font-size:15px}
+  ul.plain li:first-child{border-top:0}
+  ul.plain li b{color:var(--ink)}
+  a{color:var(--mint)}
+  footer{border-top:1px solid var(--line);padding:26px 0 60px;color:var(--mut);font-size:14px}
+  code{font-family:var(--mono);background:var(--panel2);padding:1px 5px;border-radius:5px;font-size:.9em}
+  @media(max-width:620px){.cards{grid-template-columns:1fr}}
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">receipt-gated · signed · no post without proof</p>
+    <h1>Post the <span class="a">proof</span>,<br>not the hype.</h1>
+    <p class="lede">AI-native marketing rots on one inflated claim — <b>one puffed receipt poisons six
+      true ones.</b> post-proof is the gate every announcement passes before it ships: a post may
+      <b>claim only what a verifiable build-receipt backs</b> — the live URL (a real 200), CI's
+      conclusion, the mutation-witness verdict, the measured facts. Anything it can't back is
+      <b>refused, with the exact words named.</b> No model grading the copy. Check one below.</p>
+  </header>
+
+  <section>
+    <h2>Why AI-native marketing loses the room</h2>
+    <div class="cards">
+      <div class="card"><div class="big">1 → 6</div><div class="lab">the receipt-audit law</div>
+        <div class="sub">One inflated receipt discredits the six true ones beside it. So the gate refuses the inflated one.</div></div>
+      <div class="card"><div class="big">0</div><div class="lab">models in the loop</div>
+        <div class="sub">Claims are checked against proof deterministically. No LLM grades another LLM's marketing.</div></div>
+      <div class="card"><div class="big">Aug '26</div><div class="lab">the transparency clock</div>
+        <div class="sub">The EU AI Act's transparency duties bite 2 Aug 2026. "We can prove what we said" becomes table stakes.</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Gate a draft against its receipt — live</h2>
+    <p class="lede">A draft post on the left, the build-receipt (produced by real 200 / CI / witness probes)
+      on the right. The gate names every claim it <b>can</b> check, and refuses the ones the receipt
+      doesn't back. This runs the gated <code>kernel.mjs</code>, injected verbatim.</p>
+    <div class="row">
+      <button id="load-good">Load an honest draft</button>
+      <button id="load-hyped">Load a hyped draft</button>
+    </div>
+    <label for="draft">the draft post</label>
+    <textarea id="draft" rows="6"></textarea>
+    <label for="receipt">the build-receipt (JSON)</label>
+    <textarea id="receipt" rows="12"></textarea>
+    <div class="row"><button class="go" id="gate">▶ Gate the post</button></div>
+    <div class="out" id="gate-out"></div>
+  </section>
+
+  <section>
+    <h2>The post-receipt — sealed to its backing proof</h2>
+    <p class="lede">A post that passes the gate seals a <b>content-addressed receipt</b>: the post's hash,
+      the build-receipt's hash, the backed claims. It verifies anywhere — and the gate <b>refuses to seal
+      a post that failed.</b></p>
+    <div class="row">
+      <button class="go" id="seal">Seal the current draft</button>
+      <button id="tamper-seal">Tamper with the seal</button>
+    </div>
+    <div class="out" id="seal-out"></div>
+  </section>
+
+  <section>
+    <h2>The post ledger — every claim we made, and what backed it</h2>
+    <p class="lede">Each gate decision — shipped or refused — lands on a SHA-256 hash chain. This is the
+      audit trail a regulator (or your own future self) asks for. Tamper with any entry and the chain
+      breaks visibly.</p>
+    <div class="row">
+      <button class="go" id="ledger">Run the honest + hyped drafts onto the ledger</button>
+      <button id="tamper-ledger">Now flip a refused post to "shipped"</button>
+    </div>
+    <div class="out" id="ledger-out"></div>
+  </section>
+
+  <section>
+    <h2>How it stays honest</h2>
+    <ul class="plain">
+      <li><b>It checks the checkable, and only that.</b> URLs, K/N witness scores, CI-green, "live",
+        percentages against measured facts. A number that isn't a score or a percent ("seven layers")
+        is left alone. It does not judge whether the prose is persuasive — that isn't its job.</li>
+      <li><b>No model in the loop.</b> Every decision is a deterministic rule against the receipt. A
+        model grading marketing copy is exactly the false confidence this refuses.</li>
+      <li><b>It composes, it doesn't replace.</b> The estate's generators still write the post
+        (<a href="https://sjgant80-hub.github.io/fallpost/">fallpost</a>,
+        <a href="https://sjgant80-hub.github.io/fallgravity/">fallgravity</a>). This is the <b>gate</b>
+        that sits after them and before the rail: <code>draft → post-proof → fallscrub → the rail</code>.
+        No receipt, no post.</li>
+      <li><b>The rail is already built.</b> The sanctioned Meta Graph rail (rate-disciplined, token-redacted)
+        is whole except one paste — a Page Access Token the owner sets up once. This gate is what makes
+        that rail's posts <b>provable</b>.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Honest limits (v1)</h2>
+    <ul class="plain">
+      <li><b>Checkable claims only.</b> It backs facts a receipt can carry; it does not fact-check free
+        prose or judge tone. The one-line "what it does" rides on trust, capped and visible.</li>
+      <li><b>Tamper-evident, not yet signed/anchored.</b> The post-receipt and ledger hash-verify;
+        Ed25519 issuer signing + an external anchor is v2.</li>
+      <li><b>You bring the receipt.</b> The real 200 / CI-conclusion / witness-verdict probes run in the
+        rail's runner; this kernel adjudicates the draft against what those probes found.</li>
+      <li><b>The live send needs the one-time channel connect.</b> Auto-posting to a real page needs its
+        Page Access Token, granted once by the account owner — it can't be faked. Not audited. MIT.</li>
+    </ul>
+  </section>
+
+  <footer class="wrap">
+    <b>post-proof</b> · MIT · the receipt-gate on this page is the gated <code>kernel.mjs</code>, injected
+    verbatim — the logic you ran is the logic that's witnessed. ·
+    <a href="https://github.com/sjgant80-hub/post-proof">source &amp; mutation gate</a> ·
+    <a href="https://sjgant80-hub.github.io/agent-proof/">agent-proof</a> ·
+    <a href="https://sjgant80-hub.github.io/fallforge-factory/">the factory</a>
+  </footer>
+</div>
+
+<script>
+// ⟦KERNEL-BEGIN⟧ generated from kernel.mjs by make-page.mjs — do not edit here
+// post-proof — the gate every announcement passes before it ships. A post may CLAIM only what a
+// verifiable BUILD-RECEIPT backs: the live URL (a real 200), CI's conclusion, the mutation-witness
+// verdict, and a whitelist of measured facts. One inflated receipt poisons six true ones, so the
+// rail refuses the inflated post — deterministically, no model in the loop. checkClaims names the
+// exact unproven words. Every gate decision lands on a SHA-256 ledger; a passed post seals a
+// content-addressed receipt that verifies anywhere.
+//
+// PURE and TOTAL: never fetches (the runner does the real 200 / CI / witness probes and hands the
+// receipt here); garbage in gives { ok:false, why }, never a throw. This is the ai-native-doctrine
+// ("the receipt-audit applies to our own posts hardest") made mechanical, wired before the rail
+// alongside fallscrub — no receipt, no post.
+
+const CI_STATES = Object.freeze(['success', 'failure', null]);
+const CLAIM_TYPES = Object.freeze(['url', 'live', 'ci', 'clean', 'score', 'pct']);
+
+const isStr = (v) => typeof v === 'string';
+const isBool = (v) => typeof v === 'boolean';
+const isInt = (v) => Number.isInteger(v);
+const isObj = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+// ── SHA-256 + canonical JSON (the estate's proven pair, verbatim) ───────────────────────────────
+const K256 = new Uint32Array([
+  0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+  0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+  0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+  0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+  0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+  0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+  0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+  0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+]);
+
+function sha256(text) {
+  if (!isStr(text)) return { ok: false, why: 'sha256 takes a string' };
+  const data = new TextEncoder().encode(text);
+  const len = data.length;
+  const padded = new Uint8Array((((len + 8) >> 6) << 6) + 64);
+  padded.set(data);
+  padded[len] = 0x80;
+  const dv = new DataView(padded.buffer);
+  const bitLen = len * 8;
+  dv.setUint32(padded.length - 8, Math.floor(bitLen / 4294967296));
+  dv.setUint32(padded.length - 4, bitLen >>> 0);
+  let h0 = 0x6a09e667, h1 = 0xbb67ae85, h2 = 0x3c6ef372, h3 = 0xa54ff53a;
+  let h4 = 0x510e527f, h5 = 0x9b05688c, h6 = 0x1f83d9ab, h7 = 0x5be0cd19;
+  const w = new Uint32Array(64);
+  for (let i = 0; i < padded.length; i += 64) {
+    for (let t = 0; t < 16; t++) w[t] = dv.getUint32(i + t * 4);
+    for (let t = 16; t < 64; t++) {
+      const x = w[t - 15], y = w[t - 2];
+      const s0 = (((x >>> 7) | (x << 25)) ^ ((x >>> 18) | (x << 14)) ^ (x >>> 3)) >>> 0;
+      const s1 = (((y >>> 17) | (y << 15)) ^ ((y >>> 19) | (y << 13)) ^ (y >>> 10)) >>> 0;
+      w[t] = (w[t - 16] + s0 + w[t - 7] + s1) >>> 0;
+    }
+    let a = h0, b = h1, c = h2, d = h3, e = h4, f = h5, g = h6, hh = h7;
+    for (let t = 0; t < 64; t++) {
+      const S1 = (((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7))) >>> 0;
+      const ch = ((e & f) ^ (~e & g)) >>> 0;
+      const t1 = (hh + S1 + ch + K256[t] + w[t]) >>> 0;
+      const S0 = (((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10))) >>> 0;
+      const maj = ((a & b) ^ (a & c) ^ (b & c)) >>> 0;
+      const t2 = (S0 + maj) >>> 0;
+      hh = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = b; b = a; a = (t1 + t2) >>> 0;
+    }
+    h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0; h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0;
+    h4 = (h4 + e) >>> 0; h5 = (h5 + f) >>> 0; h6 = (h6 + g) >>> 0; h7 = (h7 + hh) >>> 0;
+  }
+  const hex = (n) => n.toString(16).padStart(8, '0');
+  return { ok: true, hash: hex(h0) + hex(h1) + hex(h2) + hex(h3) + hex(h4) + hex(h5) + hex(h6) + hex(h7) };
+}
+
+function canon(v) {
+  if (v === null || typeof v === 'number' || typeof v === 'boolean') return JSON.stringify(v);
+  if (typeof v === 'string') return JSON.stringify(v);
+  if (Array.isArray(v)) return '[' + v.map(canon).join(',') + ']';
+  if (typeof v === 'object') return '{' + Object.keys(v).sort().map((k) => JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}';
+  return '"?"';
+}
+
+// ── the build-receipt: proof-of-play of a shipped thing, produced by REAL probes ────────────────
+// { url, live:bool (a real 200 was observed), ci:'success'|'failure'|null,
+//   witness:{clean:bool, killed:int, total:int} | null, does:string,
+//   facts:[{key, value}] — extra measured facts a post may cite (e.g. {key:'beats', value:'16/16'},
+//   or {key:'link', value:'https://...'} to whitelist an outbound link that is not the product URL) }
+function receiptValid(receipt) {
+  const r = receipt;
+  if (!isObj(r)) return { ok: false, why: 'a build-receipt is an object' };
+  if (!isStr(r.url) || r.url.length === 0) return { ok: false, why: 'the receipt needs a url' };
+  if (!/^https?:\/\//.test(r.url)) return { ok: false, why: 'the url must be an http or https address' };
+  if (!isBool(r.live)) return { ok: false, why: 'live must be a boolean (a real 200 was observed, or it was not)' };
+  if (!CI_STATES.includes(r.ci)) return { ok: false, why: 'ci must be success, failure, or null' };
+  if (r.witness !== null && r.witness !== undefined) {
+    const w = r.witness;
+    if (!isObj(w)) return { ok: false, why: 'witness is null, absent, or an object' };
+    if (!isBool(w.clean)) return { ok: false, why: 'witness.clean must be a boolean' };
+    if (!isInt(w.killed) || w.killed < 0) return { ok: false, why: 'witness.killed must be a non-negative integer' };
+    if (!isInt(w.total) || w.total < 1) return { ok: false, why: 'witness.total must be a positive integer' };
+    if (w.killed > w.total) return { ok: false, why: 'witness.killed cannot exceed witness.total' };
+    // NB: clean can be true with killed fewer than total — survivors carry a written equivalence
+    // argument (the estate's baseline model), so clean is an independent boolean, not killed===total.
+  }
+  if (r.does !== undefined && !isStr(r.does)) return { ok: false, why: 'does, if present, is a string' };
+  if (r.facts !== undefined) {
+    if (!Array.isArray(r.facts)) return { ok: false, why: 'facts, if present, is an array' };
+    for (let i = 0; i < r.facts.length; i++) {
+      const f = r.facts[i];
+      if (!isObj(f) || !isStr(f.key) || f.key.length === 0 || !isStr(f.value) || f.value.length === 0) {
+        return { ok: false, why: 'fact ' + i + ' needs a non-empty key and value' };
+      }
+    }
+  }
+  return { ok: true, why: 'the receipt is well-formed and internally consistent' };
+}
+
+// ── the text of a post: hook + reveal + cta, or a plain { text } ─────────────────────────────────
+function postText(post) {
+  if (isStr(post)) return post;
+  if (!isObj(post)) return '';
+  if (isStr(post.text) && post.text.length > 0) return post.text;
+  return [post.hook, post.reveal, post.cta].filter((s) => isStr(s) && s.length > 0).join('\n\n');
+}
+
+// ── claim extraction: pull only the CHECKABLE claims out of a draft, conservatively ─────────────
+// A number that is not a K/N score or a percent is left alone ("7 layers" is not a witness score).
+function extractClaims(text) {
+  if (!isStr(text)) return [];
+  const claims = [];
+  const seen = new Set();
+  const add = (c) => { const k = c.type + '|' + c.raw; if (!seen.has(k)) { seen.add(k); claims.push(c); } };
+  let m;
+  const urlRx = /https?:\/\/[^\s)\]]+/g;
+  while ((m = urlRx.exec(text)) !== null) add({ type: 'url', raw: m[0], value: m[0].replace(/[.,;:]+$/, '') });
+  const scoreRx = /\b(\d{1,4})\s*\/\s*(\d{1,4})\b/g;
+  while ((m = scoreRx.exec(text)) !== null) add({ type: 'score', raw: m[0], killed: Number(m[1]), total: Number(m[2]) });
+  const pctRx = /\b(\d{1,3}(?:\.\d+)?)\s*%/g;
+  while ((m = pctRx.exec(text)) !== null) add({ type: 'pct', raw: m[0], value: m[1] });
+  if (/\b(live|shipped|deployed|in production)\b/i.test(text)) add({ type: 'live', raw: 'live' });
+  if (/\bci (?:is )?green\b|\bci passing\b|\btests? pass(?:ing|ed)?\b|\bgreen on [^.]*runner\b|\bbuild green\b/i.test(text)) add({ type: 'ci', raw: 'ci-green' });
+  if (/\bwitness[- ]clean\b|\bmutation[- ]clean\b|\bgate[- ]?clean\b|\bprovably\b|\bverified\b/i.test(text)) add({ type: 'clean', raw: 'verified' });
+  return claims;
+}
+
+// ── adjudicate every claim against the receipt ──────────────────────────────────────────────────
+function factHas(receipt, value) {
+  const facts = Array.isArray(receipt.facts) ? receipt.facts : [];
+  return facts.some((f) => isObj(f) && isStr(f.value) && f.value.indexOf(value) !== -1);
+}
+function linkWhitelisted(receipt, value) {
+  const facts = Array.isArray(receipt.facts) ? receipt.facts : [];
+  return facts.some((f) => isObj(f) && f.key === 'link' && f.value === value);
+}
+
+function checkClaims(text, receipt) {
+  const rv = receiptValid(receipt);
+  if (!rv.ok) return { ok: false, why: 'the receipt is invalid: ' + rv.why };
+  const claims = extractClaims(text);
+  const backed = [], unbacked = [];
+  for (const c of claims) {
+    let ok = false, why = '';
+    if (c.type === 'url') {
+      if (c.value === receipt.url && receipt.live === true) { ok = true; why = 'the live product url'; }
+      else if (linkWhitelisted(receipt, c.value)) { ok = true; why = 'a whitelisted link'; }
+      else why = 'cites a url the receipt does not back as a live product url or a whitelisted link';
+    } else if (c.type === 'live') {
+      if (receipt.live === true) { ok = true; why = 'the receipt observed a 200'; }
+      else why = 'says it is live but the receipt observed no 200';
+    } else if (c.type === 'ci') {
+      if (receipt.ci === 'success') { ok = true; why = 'ci concluded success'; }
+      else why = 'claims ci is green but the receipt ci concluded ' + String(receipt.ci);
+    } else if (c.type === 'clean') {
+      if (isObj(receipt.witness) && receipt.witness.clean === true) { ok = true; why = 'the witness is clean'; }
+      else why = 'claims verified or clean but the receipt witness is not clean';
+    } else if (c.type === 'score') {
+      if (isObj(receipt.witness) && receipt.witness.killed === c.killed && receipt.witness.total === c.total) { ok = true; why = 'the witness killed count'; }
+      else if (factHas(receipt, c.raw)) { ok = true; why = 'a measured fact'; }
+      else why = 'claims a ' + c.raw + ' score the receipt does not back';
+    } else if (c.type === 'pct') {
+      if (factHas(receipt, c.raw) || factHas(receipt, c.value)) { ok = true; why = 'a measured fact'; }
+      else why = 'claims ' + c.raw + ' but no receipt fact backs it';
+    }
+    (ok ? backed : unbacked).push({ ...c, why });
+  }
+  return { ok: unbacked.length === 0, backed, unbacked, checked: claims.length };
+}
+
+// ── the gate: the composite the rail calls. A post ships only if every checkable claim is backed. ─
+function gatePost(post, receipt) {
+  const rv = receiptValid(receipt);
+  if (!rv.ok) return { ok: false, why: 'cannot gate against an invalid receipt: ' + rv.why, unbacked: [], backed: [], checked: 0 };
+  const text = postText(post);
+  if (text.length === 0) return { ok: false, why: 'no post text to check', unbacked: [], backed: [], checked: 0 };
+  const cc = checkClaims(text, receipt);
+  return {
+    ok: cc.ok, unbacked: cc.unbacked, backed: cc.backed, checked: cc.checked,
+    why: cc.ok
+      ? (cc.checked === 0 ? 'no checkable claim in the post — nothing to refute, but nothing proven either' : 'every one of the ' + cc.checked + ' checkable claims is backed by the receipt')
+      : cc.unbacked.length + ' unbacked claim(s) — refused before the rail: ' + cc.unbacked.map((u) => u.raw).join(', '),
+  };
+}
+
+// ── the post-receipt: a passed post sealed to its backing receipt, content-addressed ────────────
+function makePostReceipt(post, receipt, meta) {
+  const g = gatePost(post, receipt);
+  if (!g.ok) return { ok: false, why: 'will not seal a post that failed the gate: ' + g.why };
+  if (!isObj(meta) || !isStr(meta.sealedAt) || meta.sealedAt.length === 0) return { ok: false, why: 'meta needs a sealedAt timestamp' };
+  const text = postText(post);
+  const ph = sha256(text);
+  const rh = sha256(canon(receipt));
+  const body = {
+    v: 1, kind: 'post-proof-receipt',
+    url: receipt.url, postHash: ph.hash, receiptHash: rh.hash,
+    claimsBacked: g.backed.length, claimTypes: g.backed.map((b) => b.type).sort(),
+    sealedAt: meta.sealedAt,
+    scope: 'every checkable claim in this post is backed by the named build-receipt — it proves the post did not overclaim, not that the post is persuasive',
+  };
+  const h = sha256(canon(body));
+  if (!h.ok) return { ok: false, why: h.why };
+  return { ok: true, receipt: { ...body, hash: h.hash } };
+}
+
+function verifyPostReceipt(r) {
+  if (!isObj(r) || !isStr(r.hash)) return { ok: false, why: 'a receipt is an object with a hash' };
+  if (r.kind !== 'post-proof-receipt') return { ok: false, why: 'not a post-proof receipt' };
+  const body = { ...r };
+  delete body.hash;
+  const h = sha256(canon(body));
+  if (!h.ok) return { ok: false, why: h.why };
+  return { ok: true, valid: h.hash === r.hash };
+}
+
+// ── the post ledger: every gate decision, hash-chained (what we claimed and what backed it) ─────
+function appendPostLedger(chain, post, receipt) {
+  if (!Array.isArray(chain)) return { ok: false, why: 'the post ledger is an array' };
+  const g = gatePost(post, receipt);
+  if (!isStr(receipt && receipt.url)) return { ok: false, why: 'the receipt needs a url to ledger' };
+  const text = postText(post);
+  const entry = { url: receipt.url, postHash: sha256(text).hash, shipped: g.ok, checked: g.checked, unbacked: g.unbacked.length };
+  const prevHash = chain.length === 0 ? 'GENESIS' : chain[chain.length - 1].hash;
+  const h = sha256(prevHash + '|' + canon(entry));
+  if (!h.ok) return { ok: false, why: h.why };
+  return { ok: true, chain: [...chain, { seq: chain.length, prevHash, hash: h.hash, entry }], decision: g };
+}
+
+function verifyPostLedger(chain) {
+  if (!Array.isArray(chain)) return { ok: false, why: 'the post ledger is an array' };
+  for (let i = 0; i < chain.length; i++) {
+    const item = chain[i];
+    if (!isObj(item) || !isStr(item.hash) || !isStr(item.prevHash) || !isObj(item.entry)) return { ok: true, valid: false, brokenAt: i };
+    if (item.seq !== i) return { ok: true, valid: false, brokenAt: i };
+    const expectedPrev = i === 0 ? 'GENESIS' : chain[i - 1].hash;
+    if (item.prevHash !== expectedPrev) return { ok: true, valid: false, brokenAt: i };
+    const h = sha256(item.prevHash + '|' + canon(item.entry));
+    if (!h.ok || h.hash !== item.hash) return { ok: true, valid: false, brokenAt: i };
+  }
+  return { ok: true, valid: true, length: chain.length };
+}
+// ⟦KERNEL-END⟧
+</script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const short = (h) => typeof h === 'string' ? h.slice(0, 16) + '…' : '';
+
+  const RECEIPT = {
+    url: 'https://sjgant80-hub.github.io/agent-proof/',
+    live: true,
+    ci: 'success',
+    witness: { clean: true, killed: 130, total: 133 },
+    does: 'a deterministic policy gate + tamper-evident audit trail for AI agents',
+    facts: [
+      { key: 'no-judge', value: 'no LLM judge' },
+      { key: 'link', value: 'https://eur-lex.europa.eu/eli/reg/2024/1689/oj' }
+    ]
+  };
+  const GOOD = "We shipped agent-proof — prove an AI agent obeyed its rules, with a receipt that can say FAILS.\n\nIt is live, CI green on GitHub's runner, and witness-clean 130/133. No LLM judge.\n\nSee it: https://sjgant80-hub.github.io/agent-proof/";
+  const HYPED = "agent-proof is live and 100% bulletproof.\n\nWitness 200/200, CI green, provably unbreakable — 3x faster than anything on the market.\n\nBuy now at https://not-our-domain.example/agent-proof";
+
+  $('draft').value = GOOD;
+  $('receipt').value = JSON.stringify(RECEIPT, null, 2);
+  $('load-good').addEventListener('click', () => { $('draft').value = GOOD; });
+  $('load-hyped').addEventListener('click', () => { $('draft').value = HYPED; });
+
+  function parseReceipt() {
+    try { return { ok: true, receipt: JSON.parse($('receipt').value) }; }
+    catch (e) { return { ok: false, why: 'the receipt is not valid JSON: ' + e.message }; }
+  }
+  const claimLine = (c, yes) =>
+    '<div class="claim ' + (yes ? 'yes' : 'no') + '"><span class="mk">' + (yes ? '✓' : '✗') +
+    '</span><span class="tag">' + esc(c.type) + '</span><span class="txt"><b>' + esc(c.raw) + '</b> — ' + esc(c.why) + '</span></div>';
+
+  $('gate').addEventListener('click', () => {
+    const pr = parseReceipt();
+    if (!pr.ok) { $('gate-out').innerHTML = '<div class="verdict fail"><h3>' + esc(pr.why) + '</h3></div>'; return; }
+    const g = gatePost({ text: $('draft').value }, pr.receipt);
+    if (!g.ok && g.checked === 0 && g.backed.length === 0 && g.unbacked.length === 0) {
+      $('gate-out').innerHTML = '<div class="verdict fail"><h3>' + esc(g.why) + '</h3></div>'; return;
+    }
+    const pass = g.ok;
+    let html = '<div class="verdict ' + (pass ? 'pass' : 'fail') + '"><h3>' +
+      (pass ? 'PASS — every checkable claim is backed (' + g.checked + ' checked)' : 'REFUSED — ' + g.unbacked.length + ' unbacked claim(s) of ' + g.checked) + '</h3>';
+    html += '<div style="margin-top:10px">';
+    g.unbacked.forEach((c) => { html += claimLine(c, false); });
+    g.backed.forEach((c) => { html += claimLine(c, true); });
+    html += '</div></div>';
+    $('gate-out').innerHTML = html;
+  });
+
+  let lastSeal = null;
+  function renderSeal(mk, note) {
+    if (!mk.ok) { $('seal-out').innerHTML = '<div class="verdict fail"><h3>' + esc(mk.why) + '</h3></div>'; lastSeal = null; return; }
+    const r = mk.receipt;
+    const v = verifyPostReceipt(r);
+    lastSeal = r;
+    $('seal-out').innerHTML =
+      '<div class="seal"><div><span class="k">kind</span> <span class="v">' + esc(r.kind) + '</span></div>' +
+      '<div><span class="k">url </span> <span class="v">' + esc(r.url) + '</span></div>' +
+      '<div><span class="k">postHash</span> <span class="h">' + esc(short(r.postHash)) + '</span></div>' +
+      '<div><span class="k">receiptHash</span> <span class="h">' + esc(short(r.receiptHash)) + '</span></div>' +
+      '<div><span class="k">claimsBacked</span> <span class="v">' + esc(r.claimsBacked) + ' (' + esc(r.claimTypes.join(', ')) + ')</span></div>' +
+      '<div><span class="k">seal</span> <span class="h">' + esc(short(r.hash)) + '</span></div>' +
+      '<div style="margin-top:8px" class="stamp ' + (v.valid ? 'ok' : 'no') + '">' + (v.valid ? 'receipt verified ✓' : 'SEAL BROKEN ✗') + (note ? ' — ' + esc(note) : '') + '</div></div>';
+  }
+  $('seal').addEventListener('click', () => {
+    const pr = parseReceipt();
+    if (!pr.ok) { $('seal-out').innerHTML = '<div class="verdict fail"><h3>' + esc(pr.why) + '</h3></div>'; return; }
+    renderSeal(makePostReceipt({ text: $('draft').value }, pr.receipt, { sealedAt: new Date().toISOString() }));
+  });
+  $('tamper-seal').addEventListener('click', () => {
+    if (!lastSeal) { $('seal-out').innerHTML = '<div class="verdict fail"><h3>Seal an honest draft first, then tamper.</h3></div>'; return; }
+    const t = Object.assign({}, lastSeal, { url: 'https://sjgant80-hub.github.io/evil/' });
+    const v = verifyPostReceipt(t);
+    $('seal-out').innerHTML =
+      '<div class="seal"><div><span class="k">url (changed to)</span> <span class="v">' + esc(t.url) + '</span></div>' +
+      '<div style="margin-top:8px" class="stamp ' + (v.valid ? 'ok' : 'no') + '">' + (v.valid ? 'receipt verified ✓' : 'SEAL BROKEN ✗ — a changed field no longer matches the hash') + '</div></div>';
+  });
+
+  let ledger = [];
+  function renderLedger(broken) {
+    const v = verifyPostLedger(ledger);
+    let html = '<div class="seal"><div class="stamp ' + (v.valid ? 'ok' : 'no') + '">' +
+      (v.valid ? 'CHAIN VALID — ' + ledger.length + ' entr' + (ledger.length === 1 ? 'y' : 'ies') : 'CHAIN BROKEN at #' + v.brokenAt) + '</div>';
+    ledger.forEach((it, i) => {
+      const e = it.entry;
+      html += '<div style="margin-top:8px;border-top:1px solid var(--line);padding-top:8px">' +
+        '<span class="k">#' + i + '</span> <span class="v">' + esc(e.url) + '</span><br>' +
+        '<span class="' + (e.shipped ? 'stamp ok' : 'stamp no') + '">' + (e.shipped ? 'SHIPPED' : 'REFUSED · ' + e.unbacked + ' unbacked') + '</span> ' +
+        '<span class="k">· checked ' + esc(e.checked) + ' · </span><span class="h">' + esc(short(it.hash)) + '</span></div>';
+    });
+    html += '</div>';
+    $('ledger-out').innerHTML = html;
+  }
+  $('ledger').addEventListener('click', () => {
+    const pr = parseReceipt();
+    if (!pr.ok) { $('ledger-out').innerHTML = '<div class="verdict fail"><h3>' + esc(pr.why) + '</h3></div>'; return; }
+    ledger = [];
+    ledger = appendPostLedger(ledger, { text: GOOD }, pr.receipt).chain || ledger;
+    ledger = appendPostLedger(ledger, { text: HYPED }, pr.receipt).chain || ledger;
+    renderLedger();
+  });
+  $('tamper-ledger').addEventListener('click', () => {
+    if (ledger.length < 2) { $('ledger-out').innerHTML = '<div class="verdict fail"><h3>Build the ledger first.</h3></div>'; return; }
+    const refused = ledger.findIndex((it) => it.entry.shipped === false);
+    if (refused === -1) { return; }
+    ledger[refused].entry.shipped = true;
+    renderLedger(true);
+  });
+})();
+</script>
