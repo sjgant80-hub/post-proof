@@ -1,3 +1,4 @@
 gate.out
 kernel.mjs.witnessbak
 node_modules
+dist/

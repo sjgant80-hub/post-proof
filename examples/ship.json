@@ -1,0 +1,12 @@
+{
+  "post": "New release of the CSV checker is live at https://example.org/csv-checker. CI green on the GitHub runner; the mutation gate caught 41/43 changes (2 argued equivalent) and it is witness-clean.",
+  "receipt": {
+    "url": "https://example.org/csv-checker",
+    "live": true,
+    "ci": "success",
+    "witness": { "clean": true, "killed": 41, "total": 43 },
+    "does": "checks CSV files against a schema",
+    "facts": []
+  },
+  "sealedAt": "2026-11-01T10:00:00Z"
+}

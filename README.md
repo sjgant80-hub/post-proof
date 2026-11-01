@@ -6,6 +6,15 @@ The receipt-gate for AI-native marketing. **A post ships only if a verifiable bu
 every claim it makes.** No LLM judge. One inflated receipt poisons six true ones — so the gate
 refuses the inflated one, and names the exact unproven words.
 
+## Agent skill: claim-receipt-gate
+
+The same kernel ships as one self-contained file an AI agent runs before it publishes:
+`node scripts/claim-receipt-gate.mjs examples/refuse.json` (exit 0 = SHIP, 1 = REFUSE, 2 = bad input).
+Skill layer built by Kar (weekly choosing-session, 2026-11-01). See [SKILL.md](SKILL.md). `node build-skill.mjs` regenerates the script from kernel.mjs + cli.mjs;
+`skill.test.mjs` runs it alone in an empty folder on `examples/`; `node gate.mjs --witness tools/witness.mjs`
+writes the uncapped witness v0.6 receipt to `receipts/witness.json`; `node make-zip.mjs` builds the
+deterministic Agensi package in `dist/`.
+
 ## The problem it solves
 
 AI-native companies market at the speed they build — and one puffed claim ("100% bulletproof",

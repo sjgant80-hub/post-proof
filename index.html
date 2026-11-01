@@ -67,6 +67,7 @@
   footer{border-top:1px solid var(--line);padding:26px 0 60px;color:var(--mut);font-size:14px}
   code{font-family:var(--mono);background:var(--panel2);padding:1px 5px;border-radius:5px;font-size:.9em}
   @media(max-width:620px){.cards{grid-template-columns:1fr}}
+  @media(min-width:760px){.cards.four{grid-template-columns:repeat(4,1fr)}}
 </style>
 
 <div class="wrap">
@@ -133,6 +134,55 @@
     <div class="out" id="ledger-out"></div>
   </section>
 
+  <section id="agent">
+    <h2>Use it from your AI agent — the claim-receipt-gate skill</h2>
+    <p>The same gate you just used on this page ships as one file an AI agent can run before it publishes
+      anything: a release note, a README, a changelog, a launch post. The agent hands it the draft and the
+      receipt of what was actually built; the gate answers <b>SHIP</b> or <b>REFUSE</b> and names every claim
+      the receipt does not back. The agent's words never get past it on their own say-so.</p>
+    <h3>Start here — three ways in</h3>
+    <ol class="plain">
+      <li><b>In this page.</b> Paste a draft and a receipt in the box above, press gate. Nothing leaves your browser.</li>
+      <li><b>On the command line.</b> Clone <a href="https://github.com/sjgant80-hub/post-proof">the repo</a>, then
+        <code>node scripts/claim-receipt-gate.mjs examples/refuse.json</code>. Exit 0 = SHIP, 1 = REFUSE, 2 = the input could not be used.
+        The input is one JSON object: <code>{"post": …, "receipt": {"url","live","ci","witness","facts"}, "sealedAt"?}</code>.</li>
+      <li><b>As an agent skill.</b> Give your agent <code>SKILL.md</code> and the script. Its rule: before posting, run the gate;
+        on REFUSE, fix or cut each named claim and run it again; never publish on REFUSE.</li>
+    </ol>
+    <h3>How it works — a real run (examples/refuse.json in the repo)</h3>
+    <div class="cards four">
+      <div class="card"><div class="big">1</div><div class="lab">draft in</div>
+        <div class="sub">"verified and live in production… caught 50/50 mutants… cut review time by 70%" + two links</div></div>
+      <div class="card"><div class="big">2</div><div class="lab">claims pulled out</div>
+        <div class="sub">6 checkable: 2 links, 50/50, 70%, live, verified. Plain numbers are left alone.</div></div>
+      <div class="card"><div class="big">3</div><div class="lab">each against the receipt</div>
+        <div class="sub">receipt says: no 200 seen, CI failed, witness 41/50 not clean, the only fact is "30% on one team"</div></div>
+      <div class="card"><div class="big">REFUSE</div><div class="lab">6 unbacked, each with its reason</div>
+        <div class="sub">The honest twin (examples/ship.json) passes 5 of 5 and is sealed into a post-receipt.</div></div>
+    </div>
+    <h3>Blueprint — one source of truth</h3>
+    <pre class="plain" style="white-space:pre-wrap;font-family:var(--mono);color:var(--mut);border:1px solid var(--line);padding:12px;border-radius:8px">kernel.mjs  (the rules; tested 40 ways; mutation-gated by witness v0.6)
+  ├─ make-page.mjs   → this page's logic (CI fails if it drifts)
+  ├─ build-skill.mjs → scripts/claim-receipt-gate.mjs = kernel + cli.mjs, one file, no network, writes nothing
+  ├─ skill.test.mjs  → runs that file ALONE in an empty folder on the golden examples, as an agent store runs it
+  └─ gate.mjs        → receipts/witness.json: 93 single-operator changes made to the kernel, 91 caught,
+                       pinned to the kernel's SHA-256 so anyone can re-run the same gate on the same bytes</pre>
+    <h3>What it does for your business</h3>
+    <ul class="plain">
+      <li><b>CEO / founder:</b> one overclaim in a launch post costs more trust than ten true ones earn. This makes the overclaim impossible to ship by accident.</li>
+      <li><b>Marketing lead:</b> write at AI speed; the gate is the reviewer that never gets tired and never waves a number through.</li>
+      <li><b>CTO / CISO:</b> deterministic, no model in the loop, no network, no dependencies, MIT source you can read in an afternoon. It runs where your agent runs.</li>
+      <li><b>Compliance / legal:</b> every gate decision can be appended to a hash-chained ledger and every shipped post sealed to its backing receipt — an audit trail of what you claimed and why you were allowed to.</li>
+      <li><b>Roll-out:</b> add one step to the agent's publish flow (run the gate, honour the exit code). Day one, no training, no data leaves your machines.</li>
+    </ul>
+    <h3>Risks, answered straight</h3>
+    <ul class="plain">
+      <li><b>It does not fetch.</b> Whoever builds the receipt must probe for real (the 200, the CI result, the witness run). A faked receipt gets a faked pass; the gate proves the post matches the receipt, not that the receipt is true.</li>
+      <li><b>It checks the checkable only.</b> "Fastest on the market" is not a link, score, percent, live, CI or verified claim, so it is not caught. That is a stated limit, not a hidden one.</li>
+      <li><b>Percent matching is textual.</b> A percent is backed when a receipt fact contains it; write facts as measured.</li>
+    </ul>
+  </section>
+
   <section>
     <h2>How it stays honest</h2>
     <ul class="plain">
@@ -185,9 +235,9 @@
 // content-addressed receipt that verifies anywhere.
 //
 // PURE and TOTAL: never fetches (the runner does the real 200 / CI / witness probes and hands the
-// receipt here); garbage in gives { ok:false, why }, never a throw. This is the ai-native-doctrine
-// ("the receipt-audit applies to our own posts hardest") made mechanical, wired before the rail
-// alongside fallscrub — no receipt, no post.
+// receipt here); garbage in gives { ok:false, why }, never a throw. The rule "audit our own
+// claims hardest" made mechanical: it sits after the writer and before the publisher —
+// no receipt, no post.
 
 const CI_STATES = Object.freeze(['success', 'failure', null]);
 const CLAIM_TYPES = Object.freeze(['url', 'live', 'ci', 'clean', 'score', 'pct']);
@@ -197,7 +247,7 @@ const isBool = (v) => typeof v === 'boolean';
 const isInt = (v) => Number.isInteger(v);
 const isObj = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-// ── SHA-256 + canonical JSON (the estate's proven pair, verbatim) ───────────────────────────────
+// ── SHA-256 + canonical JSON (a pure, dependency-free pair) ───────────────────────────────
 const K256 = new Uint32Array([
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
   0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
@@ -276,7 +326,7 @@ function receiptValid(receipt) {
     if (!isInt(w.total) || w.total < 1) return { ok: false, why: 'witness.total must be a positive integer' };
     if (w.killed > w.total) return { ok: false, why: 'witness.killed cannot exceed witness.total' };
     // NB: clean can be true with killed fewer than total — survivors carry a written equivalence
-    // argument (the estate's baseline model), so clean is an independent boolean, not killed===total.
+    // argument (a reviewed baseline), so clean is an independent boolean, not killed===total.
   }
   if (r.does !== undefined && !isStr(r.does)) return { ok: false, why: 'does, if present, is a string' };
   if (r.facts !== undefined) {

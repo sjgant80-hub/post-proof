@@ -1,0 +1,56 @@
+{
+  "exitCode": 0,
+  "report": {
+    "tool": "claim-receipt-gate",
+    "verdict": "SHIP",
+    "why": "every one of the 5 checkable claims is backed by the receipt",
+    "receiptValid": true,
+    "checked": 5,
+    "backed": [
+      {
+        "type": "url",
+        "claim": "https://example.org/csv-checker.",
+        "why": "the live product url"
+      },
+      {
+        "type": "score",
+        "claim": "41/43",
+        "why": "the witness killed count"
+      },
+      {
+        "type": "live",
+        "claim": "live",
+        "why": "the receipt observed a 200"
+      },
+      {
+        "type": "ci",
+        "claim": "ci-green",
+        "why": "ci concluded success"
+      },
+      {
+        "type": "clean",
+        "claim": "verified",
+        "why": "the witness is clean"
+      }
+    ],
+    "unbacked": [],
+    "postReceipt": {
+      "v": 1,
+      "kind": "post-proof-receipt",
+      "url": "https://example.org/csv-checker",
+      "postHash": "e13460f450b8ddb27d6343c264a3b9529f11fc0dc985d25b01c8ecc4651d2a60",
+      "receiptHash": "1b0c2b71d7c065acb9db56b465287f239a486a0e82958a7926d710dc1cfc1617",
+      "claimsBacked": 5,
+      "claimTypes": [
+        "ci",
+        "clean",
+        "live",
+        "score",
+        "url"
+      ],
+      "sealedAt": "2026-11-01T10:00:00Z",
+      "scope": "every checkable claim in this post is backed by the named build-receipt — it proves the post did not overclaim, not that the post is persuasive",
+      "hash": "49ccc902322214f67056bd8a0a80d9f6652cd6001d5b39b6b0a433195aebb98d"
+    }
+  }
+}

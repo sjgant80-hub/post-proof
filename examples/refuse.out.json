@@ -1,0 +1,43 @@
+{
+  "exitCode": 1,
+  "report": {
+    "tool": "claim-receipt-gate",
+    "verdict": "REFUSE",
+    "why": "6 unbacked claim(s) — refused before the rail: https://example.org/docs, https://example.org/agent, 50/50, 70%, live, verified",
+    "receiptValid": true,
+    "checked": 6,
+    "backed": [],
+    "unbacked": [
+      {
+        "type": "url",
+        "claim": "https://example.org/docs",
+        "why": "cites a url the receipt does not back as a live product url or a whitelisted link"
+      },
+      {
+        "type": "url",
+        "claim": "https://example.org/agent",
+        "why": "cites a url the receipt does not back as a live product url or a whitelisted link"
+      },
+      {
+        "type": "score",
+        "claim": "50/50",
+        "why": "claims a 50/50 score the receipt does not back"
+      },
+      {
+        "type": "pct",
+        "claim": "70%",
+        "why": "claims 70% but no receipt fact backs it"
+      },
+      {
+        "type": "live",
+        "claim": "live",
+        "why": "says it is live but the receipt observed no 200"
+      },
+      {
+        "type": "clean",
+        "claim": "verified",
+        "why": "claims verified or clean but the receipt witness is not clean"
+      }
+    ]
+  }
+}

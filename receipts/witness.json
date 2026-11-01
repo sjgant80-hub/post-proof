@@ -1,0 +1,37 @@
+{
+ "kind": "claim-receipt-gate.witness",
+ "v": 1,
+ "witness": {
+  "tag": "v0.6",
+  "commit": "f04fe3047e3d49b98c67713befd5b77182afa0d4",
+  "sha256": "9918297aa5f8fc4e1d26d9e6b25226f56102fdc04f0c634155bfcba1c086ef48"
+ },
+ "kernel": "kernel.mjs",
+ "kernelSha256": "e0b027f53c4d02a3f29b1ab8bc92853faf15e9d1aa1cb40646a0659f17e96727",
+ "tests": "node --test kernel.test.mjs",
+ "testsSha256": "b16562ba13bf4da2eebd68a04e4cd060acf2342873a2847558074442bf86f797",
+ "node": "v25.7.0",
+ "platform": "win32",
+ "total": 93,
+ "killed": 91,
+ "survived": [],
+ "ignored": [
+  {
+   "line": 49,
+   "mutation": "< → <=",
+   "snippet": "for (let t = 16; t < 64; t++) {",
+   "reason": "Genuinely equivalent: the mutated bound runs one extra schedule iteration writing w[64], out of bounds on the fixed Uint32Array(64) — typed-array OOB writes are discarded, the loop body has no other effect, and nothing reads past w[63]. Bit-identical output; FIPS SHA-256 vectors pass either way."
+  },
+  {
+   "line": 248,
+   "mutation": "|| → &&",
+   "snippet": "if (!isObj(item) || !isStr(item.hash) || !isStr(item.prevHash) || !isObj(item.entry)) retu",
+   "reason": "Genuinely equivalent (the middle || variant): differs only when exactly ONE of item.hash / item.prevHash is a non-string, and both are shadowed by the strict recomputation below — a non-string hash cannot strictly equal the recomputed primitive-string hash, and a non-string prevHash cannot equal expectedPrev (GENESIS or a prior primitive-string hash). The killable outer clauses (an array item with an honest hash, a string entry with an honest hash) are killed by the suite."
+  }
+ ],
+ "capped": false,
+ "timeoutMs": 60000,
+ "clean": true,
+ "seconds": 79,
+ "rerun": "git clone https://github.com/sjgant80-hub/witness && git -C witness checkout v0.6 && node gate.mjs --witness witness/witness.mjs"
+}

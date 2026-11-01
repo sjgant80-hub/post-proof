@@ -1,0 +1,17 @@
+{
+  "name": "claim-receipt-gate",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Deterministic claim gate for AI-written posts, release notes and READMEs: every checkable claim must be backed by the build-receipt, or the post is refused. No LLM judge.",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "agensi": { "allow": ["url"], "creditPending": true },
+  "scripts": {
+    "build": "node make-page.mjs && node build-skill.mjs",
+    "test": "node --test kernel.test.mjs skill.test.mjs",
+    "zip": "node make-zip.mjs",
+    "gate": "node gate.mjs --witness tools/witness.mjs",
+    "verify-receipt": "node gate.mjs --verify"
+  }
+}

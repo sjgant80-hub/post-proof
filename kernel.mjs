@@ -6,9 +6,9 @@
 // content-addressed receipt that verifies anywhere.
 //
 // PURE and TOTAL: never fetches (the runner does the real 200 / CI / witness probes and hands the
-// receipt here); garbage in gives { ok:false, why }, never a throw. This is the ai-native-doctrine
-// ("the receipt-audit applies to our own posts hardest") made mechanical, wired before the rail
-// alongside fallscrub — no receipt, no post.
+// receipt here); garbage in gives { ok:false, why }, never a throw. The rule "audit our own
+// claims hardest" made mechanical: it sits after the writer and before the publisher —
+// no receipt, no post.
 
 export const CI_STATES = Object.freeze(['success', 'failure', null]);
 export const CLAIM_TYPES = Object.freeze(['url', 'live', 'ci', 'clean', 'score', 'pct']);
@@ -18,7 +18,7 @@ const isBool = (v) => typeof v === 'boolean';
 const isInt = (v) => Number.isInteger(v);
 const isObj = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-// ── SHA-256 + canonical JSON (the estate's proven pair, verbatim) ───────────────────────────────
+// ── SHA-256 + canonical JSON (a pure, dependency-free pair) ───────────────────────────────
 const K256 = new Uint32Array([
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
   0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
@@ -97,7 +97,7 @@ export function receiptValid(receipt) {
     if (!isInt(w.total) || w.total < 1) return { ok: false, why: 'witness.total must be a positive integer' };
     if (w.killed > w.total) return { ok: false, why: 'witness.killed cannot exceed witness.total' };
     // NB: clean can be true with killed fewer than total — survivors carry a written equivalence
-    // argument (the estate's baseline model), so clean is an independent boolean, not killed===total.
+    // argument (a reviewed baseline), so clean is an independent boolean, not killed===total.
   }
   if (r.does !== undefined && !isStr(r.does)) return { ok: false, why: 'does, if present, is a string' };
   if (r.facts !== undefined) {

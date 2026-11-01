@@ -8,8 +8,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: tests
-        run: node --test kernel.test.mjs
+      - name: one source of truth (kernel.mjs = live page = skill script)
+        run: node build-skill.mjs --check
+      - name: tests (the kernel, and the shipped skill script run alone as an agent store runs it)
+        run: node --test kernel.test.mjs skill.test.mjs
+      - name: the committed mutation receipt is for this kernel and these tests
+        run: node gate.mjs --verify
+      - name: Agensi ZIP (package rules checked, SHA-256 printed)
+        run: node make-zip.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agensi-zip
+          path: dist/*.zip
       - name: mutation gate — kernel.mjs must be CLEAN
         run: |
           node tools/witness.mjs mutate kernel.mjs --timeout 30000 --cap 600 --baseline witness.baseline.json --test node --test kernel.test.mjs | tee gate.out || true

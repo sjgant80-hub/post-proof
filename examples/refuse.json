@@ -1,0 +1,14 @@
+{
+  "post": {
+    "hook": "Our agent is verified and live in production.",
+    "reveal": "It caught 50/50 mutants and cut review time by 70%. Docs: https://example.org/docs",
+    "cta": "Try it at https://example.org/agent"
+  },
+  "receipt": {
+    "url": "https://example.org/agent",
+    "live": false,
+    "ci": "failure",
+    "witness": { "clean": false, "killed": 41, "total": 50 },
+    "facts": [{ "key": "review-time", "value": "cut review time 30% on one team" }]
+  }
+}
