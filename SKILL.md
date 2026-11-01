@@ -88,6 +88,8 @@ backed, sealed.
 - It checks only checkable claims: URLs, K/N scores, percents, live / shipped / deployed / in production,
   CI green / tests pass, verified / clean. "Fastest on the market" is not caught.
 - A percent is backed when a receipt fact contains that text; write facts as measured.
+- Numbers written as words ("fifty out of fifty", "a hundred percent") are not parsed: it stops habitual
+  rounding-up, not a writer deliberately evading it.
 - A bare number that is not a score or a percent ("seven layers") is left alone by design.
 
 ---

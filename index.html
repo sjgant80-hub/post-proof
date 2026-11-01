@@ -173,12 +173,14 @@
       <li><b>Marketing lead:</b> write at AI speed; the gate is the reviewer that never gets tired and never waves a number through.</li>
       <li><b>CTO / CISO:</b> deterministic, no model in the loop, no network, no dependencies, MIT source you can read in an afternoon. It runs where your agent runs.</li>
       <li><b>Compliance / legal:</b> every gate decision can be appended to a hash-chained ledger and every shipped post sealed to its backing receipt — an audit trail of what you claimed and why you were allowed to.</li>
+      <li><b>In CI (one step):</b> <code>node scripts/claim-receipt-gate.mjs release-note.json</code> — a non-zero exit fails the job, so a refused note never reaches the publish step. Build <code>release-note.json</code> from the probes your pipeline already runs (the HTTP check, the CI result, the test or mutation score).</li>
       <li><b>Roll-out:</b> add one step to the agent's publish flow (run the gate, honour the exit code). Day one, no training, no data leaves your machines.</li>
     </ul>
     <h3>Risks, answered straight</h3>
     <ul class="plain">
       <li><b>It does not fetch.</b> Whoever builds the receipt must probe for real (the 200, the CI result, the witness run). A faked receipt gets a faked pass; the gate proves the post matches the receipt, not that the receipt is true.</li>
       <li><b>It checks the checkable only.</b> "Fastest on the market" is not a link, score, percent, live, CI or verified claim, so it is not caught. That is a stated limit, not a hidden one.</li>
+      <li><b>It catches rounding-up, not a determined evader.</b> Numbers written as words ("fifty out of fifty", "a hundred percent") are not parsed. It is the guard against an agent or a busy human overclaiming by habit; pair it with a human read for anything adversarial.</li>
       <li><b>Percent matching is textual.</b> A percent is backed when a receipt fact contains it; write facts as measured.</li>
     </ul>
   </section>
