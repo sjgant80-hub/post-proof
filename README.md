@@ -33,7 +33,8 @@ AI-native companies market at the speed they build — and one puffed claim ("10
 "200/200", "live" before it's live) discredits every honest claim beside it. Our own rule
 is *the receipt-audit applies to our own posts hardest*. post-proof makes that
 rule **mechanical**: it sits between the post generators and the posting rail —
-`draft → post-proof → fallscrub → the rail` — and refuses anything the proof doesn't back.
+`draft → scrub → post-proof (on the scrubbed text) → the rail` (`postScrubbedProven` in `si-didy-loop/rail.mjs`) — and
+refuses anything the proof doesn't back.
 
 ## What it does
 
@@ -61,7 +62,7 @@ honest draft pass and a hyped draft get refused claim by claim.
 Our own pipeline already **generates** posts (`fallpost`, `fallgravity`) and already has the sanctioned
 Meta Graph **rail** (`si-didy-loop/rail.mjs` — rate-disciplined, token-redacted, whole except a
 one-time Page Access Token the owner pastes themselves). post-proof is the **gate** that makes that
-rail's posts *provable*. It is wired into the rail's `postable` check: no receipt, no post.
+rail's posts *provable*. It is wired in front of the rail's `postable` check (`postableProven`): no receipt, no post.
 
 ## Run it
 

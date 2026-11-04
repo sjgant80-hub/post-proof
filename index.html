@@ -3,6 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>post-proof</title>
+<link rel="icon" href="data:,">
 <meta name="description" content="A checker for announcements: a release note, launch post or README ships only if the record of what was built backs every claim it makes. No AI judge.">
 <style>
   :root{
@@ -177,8 +178,8 @@
         <div class="sub">Links, "live", "CI green", "verified / clean", K/N scores and percentages: the claims a reader
           takes as fact. A plain number ("seven layers") is left alone.</div></div>
       <div class="card"><div class="big">3.7</div><div class="lab">the UK advertising rule</div>
-        <div class="sub"><a href="https://www.asa.org.uk/type/non_broadcast/code_section/03.html">CAP Code rule 3.7</a>:
-          hold documentary evidence for an objective claim <b>before</b> you publish it. The US FTC asks the same
+        <div class="sub"><a href="https://www.asa.org.uk/type/non_broadcast/code_section/03.html">CAP Code rule 3.7</a>,
+          enforced by the Advertising Standards Authority: hold documentary evidence for an objective claim <b>before</b> you publish it. The US FTC asks the same
           (<a href="https://www.ftc.gov/legal-library/browse/ftc-policy-statement-regarding-advertising-substantiation">a
           reasonable basis, before dissemination</a>). post-proof makes that check mechanical for the claims it checks.</div></div>
     </div>
@@ -413,6 +414,27 @@
       <code>release-note.json</code> from the probes your pipeline already runs: the HTTP check on the live URL (<code>live</code>),
       the CI result (<code>ci</code>), the test or mutation score (<code>witness</code>), and any measured figure you want to quote
       (<code>facts</code>).</p>
+    <h3>In CI: building the receipt from the run's own probes</h3>
+    <p class="mut">A worked example for GitHub Actions, placed after your build and test steps. A step only runs when every
+      step before it passed, so <code>ci</code> is "success" by construction; the live check is a real HTTP request made by
+      the runner (not by the gate). Copy <code>scripts/claim-receipt-gate.mjs</code> into your repository first.</p>
+    <pre class="box">- name: build the receipt from this run's own probes
+  env: { URL: https://your-product.example/ }
+  run: |
+    code=$(curl -s -o /dev/null -w '%{http_code}' "$URL")
+    node -e '
+      const fs = require("fs");
+      fs.writeFileSync("release-note.json", JSON.stringify({
+        post: fs.readFileSync("RELEASE_NOTE.md", "utf8"),
+        receipt: { url: process.env.URL, live: process.argv[1] === "200",
+                   ci: "success", witness: null, facts: [] }
+      }));' "$code"
+- name: the release note may claim only what this build proved
+  run: node scripts/claim-receipt-gate.mjs release-note.json</pre>
+    <p class="mut">Add your test or mutation score as <code>witness</code> and any measured figure you want to quote as a
+      <code>fact</code>; leave them out and any score, percent or "verified" in the note is refused. For a ledger of every
+      decision, your publishing script imports <code>kernel.mjs</code> and calls <code>appendPostLedger</code>: the one-file
+      script gates and seals, it does not keep a ledger.</p>
   </section>
 
   <section id="business">
@@ -428,7 +450,7 @@
         statuses and scores the gate does instead. The <a href="#cost">cost case</a> computes it from your own volumes and the
         ONS median wage. No seats to add, no per-call bill, no server: one file in your repository.</div></div>
       <div class="card"><div class="lab">COO</div><div class="sub">One rule for every channel, applied the same way by people,
-        agents and CI. A refusal names the exact words, so a fix takes minutes, not a review cycle. The ledger shows every
+        agents and CI. A refusal names the exact words, so a fix takes minutes, not a review cycle. The refusals (and the ledger, if you keep one) show every
         decision and its reason: a process you can measure.</div></div>
       <div class="card"><div class="lab">CTO / CISO</div><div class="sub">Deterministic, no AI model, no network calls, no
         dependencies, MIT source in one file you can read in an afternoon. Mutation-tested on every push on GitHub's
@@ -439,7 +461,7 @@
         and the probes saw. You already produce the receipt: the HTTP check, the CI result, the test score. One step uses it.</div></div>
       <div class="card"><div class="lab">Compliance and legal</div><div class="sub">For every claim it checks, the evidence is
         held before publication (CAP Code 3.7; the FTC's reasonable-basis rule). Shipped posts are sealed to their receipt;
-        every decision is hash-chained. It does not judge tone, comparisons or free prose: keep your human review for those.</div></div>
+        every decision can be hash-chained on the ledger. It does not judge tone, comparisons or free prose: keep your human review for those.</div></div>
       <div class="card"><div class="lab">The people who review posts today</div><div class="sub">They stop cross-checking links,
         statuses and scores by hand and keep the judgement calls: is it clear, is it fair, is it kind. Nobody's job is to be the
         last line against a typo in a score any more.</div></div>
@@ -455,8 +477,8 @@
       <li><b>No processor, no transfer, no account.</b> Your drafts and receipts are processed on your own machine, under your
         control. Nobody receives them, so there is no third-party processing and no international transfer to assess under
         UK GDPR or GDPR.</li>
-      <li><b>No supply chain to trust.</b> Zero dependencies: no npm packages, no model weights, no binaries. The package is
-        text files only.</li>
+      <li><b>No supply chain to trust.</b> Zero dependencies: no npm packages, no third-party libraries or services, no model
+        weights, no binaries. It uses only Node.js's own built-in modules, and the package is text files only.</li>
       <li><b>Deterministic and re-checkable.</b> The same draft and receipt give the same verdict, byte for byte: CI compares the
         script's output with committed reports on every push. Anyone can re-run the mutation test on the same bytes; the
         receipts name the exact kernel, tests and witness by SHA-256.</li>
@@ -471,8 +493,10 @@
       <li><b>Week one:</b> add the one CI step before your publish step, with the receipt built from probes your pipeline
         already runs. A refused note stops the job.</li>
       <li><b>Week two:</b> give your AI agents <code>SKILL.md</code> and the script, with the rule "never publish on REFUSE".</li>
-      <li><b>From then on:</b> keep the sealed post-receipts and the ledger with your release records, as the audit trail.</li>
-      <li><b>After a month:</b> read the ledger. It shows every refusal and why; tighten how your facts are written, and decide
+      <li><b>From then on:</b> keep the sealed post-receipts (the script adds one to its report when you pass
+        <code>sealedAt</code>) with your release records. If you want a ledger of every decision, refused ones included, have
+        your publishing script call <code>appendPostLedger</code> from <code>kernel.mjs</code>.</li>
+      <li><b>After a month:</b> read every refusal and its reason (the ledger, or your CI logs); tighten how your facts are written, and decide
         where else (status pages, sales decks, investor updates) the same step belongs.</li>
     </ol>
     <p class="mut">What changes for your people: reviewers stop cross-checking the checkable claims by hand; writers get named
@@ -483,7 +507,7 @@
       <li><b>Supplier:</b> AI Native Solutions, <a href="https://www.ai-nativesolutions.com">www.ai-nativesolutions.com</a>.
         To start, or to ask anything, contact us through that site.</li>
       <li><b>Support, SLA, warranty and liability:</b> agreed per deployment, in each deployment's agreement.</li>
-      <li><b>Ownership:</b> MIT licence. The source is yours to read, run, change and keep. It keeps running without us: no
+      <li><b>Ownership:</b> MIT licence, so the software carries no licence fee. The source is yours to read, run, change and keep. It keeps running without us: no
         account, no server, no key, nothing calls home.</li>
       <li><b>Exit:</b> delete one file and one CI step. Your ledger and receipts are plain JSON files you already hold.</li>
     </ul>
@@ -512,7 +536,7 @@
       advertising rules on both sides of the Atlantic already expect the evidence to be held before an objective claim is
       published. post-proof makes that check mechanical for every link, status and score your people and your AI agents
       publish; it keeps the evidence; it sends nothing outside; it costs one CI step to adopt and minutes to remove.
-      <b>Recommendation:</b> pilot it on one product's release notes for a month, and judge it on the ledger.</p>
+      <b>Recommendation:</b> pilot it on one product's release notes for a month, and judge it on its refusals and what they caught.</p>
   </section>
 
   <section id="cost">
@@ -532,7 +556,12 @@
       <div><label for="c-years">years</label><input type="number" id="c-years" min="1" max="10" step="1"></div>
     </div>
     <p class="mut">The starting values are an example, not a measurement: replace them with yours. "Share the gate takes
-      off" is the part of a reviewer's checking that is links, statuses, scores and percentages; the rest stays human.</p>
+      off" is the part of a reviewer's checking that is links, statuses, scores and percentages; the rest stays human. A year
+      is 52 weeks of posts, so lower the weekly figure if you publish less in holiday weeks. The assistant-seat row is what
+      renting help would add; if you already pay for those seats, read it as the checking they leave with your reviewers.
+      Tokens are the word-pieces a cloud AI model reads and writes, and bills by; the two token fields are only for the
+      cloud-model rows: what such a model would read (the draft, the receipt, its instructions) and write to judge one post.
+      post-proof itself uses no AI model, so it has no tokens and no such bill.</p>
     <div id="cost-out" aria-live="polite"></div>
     <h3>What the money does not show</h3>
     <div class="tablewrap"><table class="money">
@@ -555,9 +584,12 @@
 
   <section id="questions">
     <h2>Questions buyers asked</h2>
-    <p class="lede">Before calling this page finished, four buyers (a CFO, a CTO / CISO, a COO and a procurement lead) read it
-      cold and listed every question it left open. These are their questions and the straight answers; the gaps they found
-      in the page itself have been fixed above.</p>
+    <p class="lede">Before calling this page finished, four buyer personas (a CFO, a CTO / CISO, a COO and a procurement lead)
+      read it cold, twice: a first pass on a local open model, then a second, adversarial read. They listed every question
+      it left open. These are the questions and the straight answers; the gaps they found in the page itself (unexplained
+      jargon, a figure shown without its value, a wrong statement of where the gate sits in our own pipeline) were fixed
+      above. The full record is <a href="https://github.com/sjgant80-hub/post-proof/blob/master/walks/2026-11-04-buyer-walk.json">in
+      the repository</a>.</p>
     <h3>CFO</h3>
     <ul class="plain">
       <li><b>What does it cost us to use?</b> The software is MIT-licensed: the source carries no licence fee, no seats and no
@@ -583,15 +615,31 @@
         the receipt afterwards is detectable.</li>
       <li><b>Who tests the tester?</b> The mutation test (witness) is public, pinned at a tagged version, cloned fresh on every
         CI run, and checked byte for byte against the copy in the repository.</li>
+      <li><b>Where does the ledger live, and who can change it?</b> It is a plain JSON array your own publishing script keeps,
+        wherever you keep release records (your repository, your artifact store). The hash chain makes any change detectable;
+        who may write to it is set by wherever you store it, under your own access control.</li>
+      <li><b>Does the MIT licence cover all of it?</b> The repository carries one MIT licence (the <code>LICENSE</code> file),
+        and the agent package ships that same file.</li>
     </ul>
     <h3>COO</h3>
     <ul class="plain">
       <li><b>What happens when a true post is refused?</b> The refusal names the claim and why. Usually the evidence exists but
         is not in the receipt: add it as a fact (a measured figure, or a <code>link</code> fact for an outbound link) and run
         again. There is no override switch in the gate; publishing anyway is a person's decision, made outside it, and the
-        ledger still shows the refusal.</li>
+        refusal stays on record (in CI's log, and on the ledger if you keep one).</li>
       <li><b>Does it work in other languages?</b> Links, K/N scores and percentages are checked in any language. The status words
         ("live", "CI green", "verified") are matched in English only, so in another language those claims go unchecked.</li>
+      <li><b>How exactly do we add a fact?</b> A fact is a pair in the receipt's <code>facts</code> list: a key, and the
+        measured statement as you would quote it, for example <code>{"key": "review-time", "value": "cut review time 30% on one
+        team"}</code>. A percent or a K/N score in the draft is backed when a fact's value contains it, so "review time down 30%"
+        passes against that fact and "down 70%" does not. An outbound link is whitelisted with a fact keyed <code>link</code>
+        whose value is the exact URL.</li>
+      <li><b>Does it fit our build system?</b> Any build system works: the receipt is five fields (<code>url</code>,
+        <code>live</code>, <code>ci</code>, <code>witness</code>, <code>facts</code>) you fill from whatever your pipeline
+        already measures. A malformed receipt is refused with the reason, never guessed at.</li>
+      <li><b>Can we change the rules?</b> Not by configuration, on purpose: fixed rules are what make every team's answer the
+        same. What you control is the receipt (facts and whitelisted links). To change a rule you change <code>kernel.mjs</code>
+        (MIT); its tests and the mutation gate then show exactly what the change broke.</li>
       <li><b>What changes for the team?</b> Reviewers stop cross-checking links, statuses and scores; writers get named words to
         fix; release engineers add one CI step. Nobody needs training beyond reading one refusal.</li>
     </ul>
@@ -640,7 +688,8 @@
       receipt shows.</p>
     <h3>Where it fits</h3>
     <p>After whatever writes the post (a person, an AI agent, a post generator) and before whatever publishes it. In our own
-      publishing pipeline it runs before a scrub step and the posting rail: no receipt, no post.</p>
+      publishing pipeline the prose is scrubbed first, this gate then checks the scrubbed text (so a scrub that changed a
+      claim would be refused), and only then does the posting rail apply its own rate limits: no receipt, no post.</p>
     <h3>Check us</h3>
     <p>The source, the receipts and the CI runs are public: <a href="https://github.com/sjgant80-hub/post-proof">the repository</a>
       · <a href="https://github.com/sjgant80-hub/post-proof/actions">every CI run</a> ·
@@ -1342,7 +1391,8 @@ function costCase(basis, input) {
   function render() {
     if (!BASIS) { $('cost-out').innerHTML = '<div class="verdict fail"><h3>The sourced basis could not be read.</h3></div>'; return; }
     const r = COSTCASE.costCase(BASIS, read());
-    if (!r.ok) { $('cost-out').innerHTML = '<div class="verdict fail"><h3>' + esc(r.why) + '</h3></div>'; return; }
+    // the share is typed here as a percentage; say its range the way the reader typed it
+    if (!r.ok) { $('cost-out').innerHTML = '<div class="verdict fail"><h3>' + esc(r.why.replace('takes off: 0 to 1', 'takes off: 0% to 100%')) + '</h3></div>'; return; }
     const y = r.inputs.years, yrs = y + (y === 1 ? ' year' : ' years');
     const copilot = BASIS['seat.copilot'].product, frontier = BASIS.frontier.product, bedrock = BASIS.bedrockGptOss120b.product;
     const row = (label, k, us) => '<tr' + (us ? ' class="us"' : '') + '><td>' + label + '</td><td class="n">' + esc(money(r.perYear[k])) +

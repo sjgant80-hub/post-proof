@@ -1,0 +1,159 @@
+{
+ "kind": "post-proof.buyer-walk",
+ "v": 1,
+ "date": "2026-11-04",
+ "page": {
+  "url": "https://sjgant80-hub.github.io/post-proof/",
+  "commit": "920cdc6",
+  "note": "the page text as committed in 920cdc6 (scripts and styles stripped, the cost calculator's default output appended; the JS-rendered source list was not in the text given to the model)",
+  "textSha256": "3da54dccc741fa36580fc671e1e0c1b96aa7a907a140b59b1a8597ca9313292f"
+ },
+ "method": [
+  "Pass 1, local model: qwen2.5:7b (Q4_K_M) on this machine's Ollama, CPU only, temperature 0.3, one prompt per persona, the page text first so the prefix is shared. Outputs kept verbatim below.",
+  "Pass 2, adversarial read of the same page by Kar, as the same four buyers, checking every claim against the code (kernel.mjs, cli.mjs, make-zip.mjs) and the pipeline it names (si-didy-loop/rail.mjs)."
+ ],
+ "personas": {
+  "CFO": "CFO of a 400-person UK software company; approves spend; hates unsourced numbers and vague savings.",
+  "CTO-CISO": "CTO and acting CISO of a UK fintech; data leaving the building, supply chain, determinism, truth of security claims.",
+  "COO": "COO of a UK SaaS company with 12 product teams publishing weekly release notes; process, roll-out effort, staff change.",
+  "Procurement": "Procurement lead at a UK public-sector body; supplier, terms, support, licence, exit, data protection, hidden costs."
+ },
+ "pass1": {
+  "CFO": {
+   "seconds": 1162,
+   "promptTokens": 7148,
+   "outputTokens": 121,
+   "output": "1. What are the exact costs of the software, including any hidden fees?\n2. How is the \"UK advertising rule\" (CAP Code rule 3.7) enforced in practice?\n3. What is the \"UK median hourly wage\" and how is it calculated?\n4. How does the \"gate\" ensure that the \"cloud model\" is not used in any hidden way?\n5. What are the \"tokens\" mentioned in the cost case, and how are they relevant?\n\nVerdict: The page lacks specific financial details and practical enforcement mechanisms that would be crucial for a CFO."
+  },
+  "CTO-CISO": {
+   "seconds": 519,
+   "promptTokens": 7158,
+   "outputTokens": 389,
+   "output": "1. **Gap:** \"post-proof makes that check mechanical for every link, status and score your people and your AI agents publish\" - No details on how this is enforced or how other claims are handled.\n2. **Gap:** \"No AI model, no network calls, no dependencies\" - Unclear if this includes third-party libraries or services.\n3. **Gap:** \"Deterministic, no AI model, no network calls, no dependencies, MIT source in one file you can read in an afternoon\" - How is the MIT license applied to the entire system?\n4. **Gap:** \"No processor, no transfer, no account\" - How is the receipt built and verified in a CI/CD pipeline?\n5. **Gap:** \"The cost case is a model, not a measurement\" - What are the assumptions and how do they impact the savings?\n6. **Gap:** \"post-proof is the gate between the draft and the publish button\" - How is the gate integrated into the existing CI/CD pipeline?\n7. **Gap:** \"The mutation test (witness) is public, pinned at a tagged version, cloned fresh on every CI run, and checked byte for byte against the copy in the repository\" - How is the mutation test executed and verified?\n8. **Gap:** \"The ledger shows every decision and its reason\" - How is the ledger stored and accessed securely?\n9. **Gap:** \"The command-line script makes no network calls, reads only the input you name, and writes no files\" - How is the script executed in a CI/CD environment?\n10. **Gap:** \"The cost case computes the rest from 8 sourced public figures, listed below with their links\" - What are the 8 sourced public figures and their links?\n\n**Verdict:** The page provides a strong foundation but lacks detailed steps and assurances on integration, security, and data handling."
+  },
+  "COO": {
+   "seconds": 158,
+   "promptTokens": 7158,
+   "outputTokens": 98,
+   "output": "1. What is the exact process for adding a fact to the receipt?\n2. How does the tool handle complex claims, like \"performance improved by 30%\"?\n3. Are there any known issues with the tool handling legacy code or non-standard build receipts?\n4. How does the tool handle multi-language support for non-English status words?\n5. Is there a way to customize the rules for specific use cases?\n\nVerdict: Requires more details on implementation and customization."
+  },
+  "Procurement": {
+   "seconds": 248,
+   "promptTokens": 7159,
+   "outputTokens": 160,
+   "output": "1. Who is the supplier, and how do we contract? \"AI Native Solutions, www.ai-nativesolutions.com; contact through that site.\"\n2. Support, SLA, warranty and liability: agreed per deployment, in each deployment's agreement.\n3. Ownership: MIT licence.\n4. Exit: delete one file and one CI step.\n5. Do we need a data processing agreement? Not for the software: nothing leaves your machines, so nobody processes your data for you.\n6. Which certifications does it hold? None is claimed for the software.\n7. Is there lock-in or a hidden cost? No. MIT licence, no account, nothing calls home.\n\nVerdict: The page provides necessary details but lacks explicit terms and conditions, support SLA, and warranty information."
+  }
+ },
+ "gaps": [
+  {
+   "from": "CFO (pass 1)",
+   "gap": "What does the software cost, including hidden fees?",
+   "done": "answered on the page: Ownership now says MIT means no licence fee; the buyers' questions answer it (no seats, no usage bill; support terms per deployment)"
+  },
+  {
+   "from": "CFO (pass 1)",
+   "gap": "How is CAP Code rule 3.7 enforced?",
+   "done": "fixed: the card names the Advertising Standards Authority as its enforcer"
+  },
+  {
+   "from": "CFO (pass 1)",
+   "gap": "What is the UK median hourly wage, how calculated?",
+   "done": "already on the page in the JS-rendered source list (not in the text the model got); the list now also shows each figure's value and unit"
+  },
+  {
+   "from": "CFO (pass 1)",
+   "gap": "Could a cloud model be used in a hidden way?",
+   "done": "answered: no model and no network in the gate; the cost note now says post-proof uses no AI model and has no token bill"
+  },
+  {
+   "from": "CFO (pass 1)",
+   "gap": "\"tokens\" is jargon",
+   "done": "fixed: tokens explained beside the inputs"
+  },
+  {
+   "from": "CTO-CISO (pass 1)",
+   "gap": "\"no dependencies\": third-party libraries or services?",
+   "done": "fixed: security now says no third-party libraries or services, only Node.js built-in modules (checked: cli.mjs imports node:fs and ./kernel.mjs only)"
+  },
+  {
+   "from": "CTO-CISO (pass 1)",
+   "gap": "How is the receipt built in CI?",
+   "done": "fixed: a worked GitHub Actions example that builds the receipt from the run's own probes, tested end to end (SHIP, exit 0)"
+  },
+  {
+   "from": "CTO-CISO (pass 1)",
+   "gap": "How is the ledger stored and accessed securely?",
+   "done": "answered in the buyers' questions: a JSON array your publishing script keeps under your own access control; the chain makes changes detectable"
+  },
+  {
+   "from": "CTO-CISO (pass 1)",
+   "gap": "Does the MIT licence cover the whole system?",
+   "done": "answered: one MIT LICENSE for the repository, shipped in the package"
+  },
+  {
+   "from": "CTO-CISO (pass 1)",
+   "gap": "What are the 8 sourced figures?",
+   "done": "already on the page (JS-rendered list); now with values"
+  },
+  {
+   "from": "COO (pass 1)",
+   "gap": "Exact process for adding a fact",
+   "done": "answered with the JSON shape and a worked example, each statement checked against kernel.mjs"
+  },
+  {
+   "from": "COO (pass 1)",
+   "gap": "How is \"performance improved by 30%\" handled?",
+   "done": "answered: backed only when a fact's value contains 30%"
+  },
+  {
+   "from": "COO (pass 1)",
+   "gap": "Legacy or non-standard build receipts?",
+   "done": "answered: five fields from any pipeline; a malformed receipt is refused with the reason (checked)"
+  },
+  {
+   "from": "COO (pass 1)",
+   "gap": "Non-English status words",
+   "done": "already answered (links, scores, percents in any language; status words English only)"
+  },
+  {
+   "from": "COO (pass 1)",
+   "gap": "Can the rules be customised?",
+   "done": "answered: not by configuration, on purpose; the receipt is what you control; kernel.mjs is MIT and gated"
+  },
+  {
+   "from": "Procurement (pass 1)",
+   "gap": "No explicit terms and conditions, SLA or warranty published",
+   "done": "not invented: they are agreed per deployment (supplier facts); publishing standard terms is Simon's decision"
+  },
+  {
+   "from": "pass 2",
+   "gap": "Page and README said the gate runs before the scrub step; si-didy-loop/rail.mjs postScrubbedProven scrubs first, then gates the scrubbed text",
+   "done": "fixed on the page and in the README"
+  },
+  {
+   "from": "pass 2",
+   "gap": "Roll-out, the COO card and an answer implied the one-file script keeps a ledger; it gates and seals only (appendPostLedger is a kernel.mjs function)",
+   "done": "fixed everywhere it was stated"
+  },
+  {
+   "from": "pass 2",
+   "gap": "Typing 150 in the share field showed \"0 to 1\" while the field is a percentage",
+   "done": "fixed: the message reads 0% to 100%"
+  },
+  {
+   "from": "pass 2",
+   "gap": "Source list gave each figure's source but not the figure",
+   "done": "fixed: value and unit shown beside each source"
+  },
+  {
+   "from": "pass 2",
+   "gap": "The 52-week year and the meaning of the assistant-seat row were unexplained",
+   "done": "fixed: stated under the inputs"
+  },
+  {
+   "from": "pass 2 (before 920cdc6)",
+   "gap": "Unsourced \"1 -> 6\" slogan; \"signed\" in the eyebrow though receipts are hash-verified, not signed; an EU AI Act card that overreached",
+   "done": "removed; the card replaced by CAP Code 3.7 and the FTC substantiation policy, both linked"
+  }
+ ]
+}
