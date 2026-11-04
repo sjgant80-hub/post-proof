@@ -1,0 +1,24 @@
+{
+ "kind": "claim-receipt-gate.costcase.witness",
+ "v": 1,
+ "witness": {
+  "tag": "v0.6",
+  "commit": "f04fe3047e3d49b98c67713befd5b77182afa0d4",
+  "sha256": "9918297aa5f8fc4e1d26d9e6b25226f56102fdc04f0c634155bfcba1c086ef48"
+ },
+ "kernel": "costcase.mjs",
+ "kernelSha256": "04a400cb589f26dd4053c58286c9f43b58bde764fcd4233f099b3618c694bb2d",
+ "tests": "node --test costcase.test.mjs",
+ "testsSha256": "dd4b952cfc37fa5278f9c0749d54c0e248247a403a3e036e41ab0720047e6445",
+ "node": "v25.7.0",
+ "platform": "win32",
+ "total": 24,
+ "killed": 24,
+ "survived": [],
+ "ignored": [],
+ "capped": false,
+ "timeoutMs": 60000,
+ "clean": true,
+ "seconds": 21,
+ "rerun": "git clone https://github.com/sjgant80-hub/witness && git -C witness checkout v0.6 && node gate.mjs --witness witness/witness.mjs --kernel costcase.mjs --tests costcase.test.mjs"
+}

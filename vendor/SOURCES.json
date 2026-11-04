@@ -1,0 +1,16 @@
+{
+ "kind": "post-proof.vendor",
+ "v": 1,
+ "note": "Copied byte for byte with git show (not a working copy) from the commit named. Never edit a vendored file; re-vendor and update the hash. CI fails if a vendored file's SHA-256 differs from the one recorded here.",
+ "files": [
+  {
+   "path": "vendor/sovereign-enterprise/data/basis.json",
+   "repo": "sjgant80-hub/liveware",
+   "commit": "ee580e4bebeeb1ddbf2fb30817a471572a414c80",
+   "src": "vendor/ai-first-company/vendor/sovereign-enterprise/data/basis.json",
+   "upstream": "sjgant80-hub/sovereign-enterprise data/basis.json (vendored into ai-first-company, then into liveware, unchanged)",
+   "sha256": "83e9c2effa2f81596dcfa7110f030940032c1910cdf928d27d628ae59d73bb42",
+   "what": "the sourced cost basis (ONS wage, ONS CPI, DESNZ electricity, ECB exchange rate, vendor list prices) that costcase.mjs reads"
+  }
+ ]
+}

@@ -1,9 +1,11 @@
 # post-proof
 
-**LIVE: https://sjgant80-hub.github.io/post-proof/**
+**LIVE: https://sjgant80-hub.github.io/post-proof/**  (start here, how it works, blueprint, for business, the cost case
+and the white paper are all on the page)
 
-The receipt-gate for AI-native marketing. **A post ships only if a verifiable build-receipt backs
-every claim it makes.** No LLM judge. One inflated receipt poisons six true ones — so the gate
+A checker for announcements: a release note, launch post, README or changelog ships only if the record of what was built
+backs every checkable claim it makes. The receipt-gate for AI-native marketing. **A post ships only if a verifiable build-receipt backs
+every claim it makes.** No LLM judge. One inflated claim discredits the true ones beside it, so the gate
 refuses the inflated one, and names the exact unproven words.
 
 ## Agent skill: claim-receipt-gate
@@ -15,12 +17,22 @@ Skill layer built by Kar (weekly choosing-session, 2026-11-01). See [SKILL.md](S
 writes the uncapped witness v0.6 receipt to `receipts/witness.json`; `node make-zip.mjs` builds the
 deterministic Agensi package in `dist/`.
 
+## The cost case (For business, on the page)
+
+`costcase.mjs` is a second gated kernel: what checking the claims in posts by hand costs a team in staff time, set
+against assistant seats, a cloud model judging every post, and the gate. The reader's own figures go in; every external
+figure comes from `vendor/sovereign-enterprise/data/basis.json` (ONS wage and CPI, DESNZ electricity, ECB exchange rate,
+vendor list prices, each with its source), copied byte for byte from `sjgant80-hub/liveware` (recorded with its SHA-256 in
+`vendor/SOURCES.json`; CI re-fetches the source and compares). Floors, never top ends; no price of ours. `make-page.mjs`
+injects both kernels and the basis into the page, and fills every number the page states about the build from
+`receipts/`, `examples/` and the test files; CI rebuilds the page and fails on any difference.
+
 ## The problem it solves
 
 AI-native companies market at the speed they build — and one puffed claim ("100% bulletproof",
-"200/200", "live" before it's live) discredits every honest claim beside it. The estate's own law
-(`ai-native-doctrine`) is *the receipt-audit applies to our own posts hardest*. post-proof makes that
-law **mechanical**: it sits between the post generators and the posting rail —
+"200/200", "live" before it's live) discredits every honest claim beside it. Our own rule
+is *the receipt-audit applies to our own posts hardest*. post-proof makes that
+rule **mechanical**: it sits between the post generators and the posting rail —
 `draft → post-proof → fallscrub → the rail` — and refuses anything the proof doesn't back.
 
 ## What it does
@@ -46,7 +58,7 @@ honest draft pass and a hyped draft get refused claim by claim.
 
 ## Where it fits (it composes, it doesn't replace)
 
-The estate already **generates** posts (`fallpost`, `fallgravity`) and already has the sanctioned
+Our own pipeline already **generates** posts (`fallpost`, `fallgravity`) and already has the sanctioned
 Meta Graph **rail** (`si-didy-loop/rail.mjs` — rate-disciplined, token-redacted, whole except a
 one-time Page Access Token the owner pastes themselves). post-proof is the **gate** that makes that
 rail's posts *provable*. It is wired into the rail's `postable` check: no receipt, no post.
@@ -54,10 +66,16 @@ rail's posts *provable*. It is wired into the rail's `postable` check: no receip
 ## Run it
 
 ```bash
-node --test kernel.test.mjs
-node tools/witness.mjs mutate kernel.mjs --timeout 20000 --cap 600 --baseline witness.baseline.json --test node --test kernel.test.mjs
+node --test kernel.test.mjs costcase.test.mjs skill.test.mjs
+node gate.mjs --witness tools/witness.mjs                                               # kernel.mjs → receipts/witness.json
+node gate.mjs --witness tools/witness.mjs --kernel costcase.mjs --tests costcase.test.mjs   # → receipts/witness-costcase.json
+node gate.mjs --verify && node gate.mjs --verify --kernel costcase.mjs --tests costcase.test.mjs
 node make-page.mjs
 ```
+
+CI (`.github/workflows/gate.yml`) runs on every push on GitHub's runner: witness cloned fresh at its `v0.6` tag (and
+`tools/` checked to be the same bytes), the vendored basis checked against its source, all tests, both receipts, the
+Agensi ZIP, the witness mutation gate on both kernels (must be clean), and the page fixpoint.
 
 ## Honest limits (v1)
 
@@ -67,3 +85,10 @@ yet signed/anchored** (Ed25519 issuer signing + external anchor is v2). You brin
 probes live in the rail's runner). The live send to a real page needs the one-time channel connect —
 it can't be faked. Not audited. Mutation-witnessed in CI (survivors carry a written equivalence
 argument). MIT.
+
+## Supplier and support
+
+Supplied by AI Native Solutions (https://www.ai-nativesolutions.com; contact through that site). Support, SLA, warranty and
+liability are agreed per deployment, in each deployment's agreement. MIT: it keeps running without us.
+
+Powered by the Konomi architecture, created by Thomas Frumkin.

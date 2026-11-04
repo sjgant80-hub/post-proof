@@ -8,23 +8,42 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: witness pinned at v0.6 (the tag, cloned fresh; the copy in tools/ must be the same bytes)
+        run: |
+          git clone --depth 1 --branch v0.6 https://github.com/sjgant80-hub/witness.git /tmp/witness6
+          cmp tools/witness.mjs /tmp/witness6/witness.mjs
+          cmp tools/runner.mjs /tmp/witness6/runner.mjs
+          echo "tools/witness.mjs + tools/runner.mjs = witness v0.6"
+      - name: the vendored cost basis is the source repo's file, byte for byte
+        run: |
+          node -e "const s=require('./vendor/SOURCES.json');for(const f of s.files)console.log(f.repo+' '+f.commit+' '+f.src+' '+f.path+' '+f.sha256)" | while read repo commit src path want; do
+            got=$(sha256sum "$path" | cut -d' ' -f1)
+            up=$(curl -fsSL "https://raw.githubusercontent.com/$repo/$commit/$src" | sha256sum | cut -d' ' -f1)
+            echo "$path local $got upstream $up recorded $want"
+            [ "$got" = "$want" ] && [ "$up" = "$want" ] || { echo "::error::$path differs from $repo@$commit:$src"; exit 1; }
+          done
       - name: one source of truth (kernel.mjs = live page = skill script)
         run: node build-skill.mjs --check
-      - name: tests (the kernel, and the shipped skill script run alone as an agent store runs it)
-        run: node --test kernel.test.mjs skill.test.mjs
-      - name: the committed mutation receipt is for this kernel and these tests
-        run: node gate.mjs --verify
+      - name: tests (the claim gate, the cost case, and the shipped skill script run alone as an agent store runs it)
+        run: node --test kernel.test.mjs costcase.test.mjs skill.test.mjs
+      - name: the committed mutation receipts are for these kernels and these tests
+        run: |
+          node gate.mjs --verify
+          node gate.mjs --verify --kernel costcase.mjs --tests costcase.test.mjs
       - name: Agensi ZIP (package rules checked, SHA-256 printed)
         run: node make-zip.mjs
       - uses: actions/upload-artifact@v4
         with:
           name: agensi-zip
           path: dist/*.zip
-      - name: mutation gate — kernel.mjs must be CLEAN
+      - name: mutation gate — kernel.mjs and costcase.mjs must both be CLEAN (witness v0.6, on this runner), matching the committed receipts
         run: |
-          node tools/witness.mjs mutate kernel.mjs --timeout 30000 --cap 600 --baseline witness.baseline.json --test node --test kernel.test.mjs | tee gate.out || true
-          node -e "const b=require('fs').readFileSync('gate.out','utf8');const j=JSON.parse(b.slice(b.indexOf('{'),b.lastIndexOf('}')+1));if(j.clean!==true){console.error('GATE NOT CLEAN');process.exit(1)}console.log('CLEAN '+j.killed+'/'+j.total)"
-      - name: page fixpoint — the live logic IS the gated kernel
+          for trio in "kernel.mjs kernel.test.mjs receipts/witness.json" "costcase.mjs costcase.test.mjs receipts/witness-costcase.json"; do
+            set -- $trio
+            node /tmp/witness6/witness.mjs mutate "$1" --timeout 30000 --cap 600 --baseline witness.baseline.json --test node --test "$2" | tee gate.out || true
+            node -e "const fs=require('fs');const b=fs.readFileSync('gate.out','utf8');const j=JSON.parse(b.slice(b.indexOf('{'),b.lastIndexOf('}')+1));const r=JSON.parse(fs.readFileSync('$3','utf8'));if(j.clean!==true){console.error('GATE NOT CLEAN: $1');process.exit(1)}if(j.killed!==r.killed||j.total!==r.total){console.error('$1: this runner got '+j.killed+'/'+j.total+' but $3 says '+r.killed+'/'+r.total);process.exit(1)}console.log('CLEAN $1 '+j.killed+'/'+j.total+' = $3')"
+          done
+      - name: page fixpoint — the live logic IS the gated kernels, and every number on the page comes from the repo
         run: |
           node make-page.mjs
           git diff --exit-code index.html
