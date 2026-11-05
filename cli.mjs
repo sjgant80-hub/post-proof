@@ -2,7 +2,7 @@
 // logic the live page runs) into scripts/claim-receipt-gate.mjs, the single file the Agensi skill runs.
 // It reads a draft post and the build-receipt behind it, pulls out every checkable claim (links, "live",
 // "CI green", "verified", K/N scores, percents) and says which ones the receipt backs. No model in the loop.
-// Exit 0 = SHIP (every checkable claim backed) · 1 = REFUSE · 2 = the input could not be used.
+// Exit 0 = SHIP (every checkable claim backed) · 1 = REFUSE · 2 = the input could not be used · 3 = an internal error.
 import { readFileSync } from 'node:fs';
 import { gatePost, makePostReceipt, receiptValid } from './kernel.mjs';
 
@@ -10,7 +10,7 @@ const USAGE = `usage: node claim-receipt-gate.mjs <input.json | ->
 input:  {"post": "<text>" | {"text"} | {"hook","reveal","cta"},
          "receipt": {"url", "live", "ci", "witness": {"clean","killed","total"} | null, "facts": [{"key","value"}]},
          "sealedAt": "<ISO time, optional: seal a passed post into a content-addressed post-receipt>"}
-output: a JSON report on stdout. exit 0 = SHIP, 1 = REFUSE, 2 = bad input`;
+output: a JSON report on stdout. exit 0 = SHIP, 1 = REFUSE, 2 = bad input, 3 = internal error`;
 
 class InputError extends Error {}
 const fail = (msg) => { throw new InputError(msg); };

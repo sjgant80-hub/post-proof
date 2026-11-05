@@ -1,0 +1,83 @@
+{
+ "kind": "post-proof.buyer-walk",
+ "v": 1,
+ "date": "2026-11-05",
+ "page": {
+  "url": "https://sjgant80-hub.github.io/post-proof/",
+  "commit": "7aa8f37",
+  "servedSha256": "e8e6860e929ef50c73b33d60aee4f72d4217a079ee01e4dfba40d2f1eee1d6a8",
+  "note": "the page as GitHub Pages served it (HTTP 200) after the third walk's fixes, byte for byte the committed index.html of 7aa8f37; read rendered in a browser tab with its scripts running"
+ },
+ "method": [
+  "Fourth walk, after the two in walks/2026-11-04-buyer-walk.json and the third in walks/2026-11-05-served-walk.json, because the third walk's fixes changed the page. Kar read the served page cold as the same four buyers and used it as a buyer would: pressed every button (both drafts, gate, seal, tamper, ledger, flip), read every cost figure, and checked the page at 375px.",
+  "As the CTO, Kar tried the gate with hype it had not been shown: 15 drafts against a receipt with one fact ('cut review time 30% on one team'): '1000% faster', '12000%', '12345/12345', '1,000%', '100.0%', '99.99%', '-30%', '30 %', '30 percent', a full-width percent sign, 'v2.5%', '41/43.', '0.5%', '1e3%', '50/50/50'.",
+  "Every statement a buyer would rely on was checked against the code it describes (kernel.mjs, cli.mjs, scripts/claim-receipt-gate.mjs, make-zip.mjs, costcase.mjs) and the demo receipt against agent-proof's own CI log (run 34969004386: 130/133 killed, clean).",
+  "The fixes were then checked in a browser on a local copy of the rebuilt page: every button and the cost case work under the new Content-Security-Policy, and the browser refused both a fetch to another site and an injected script, logging each refusal.",
+  "No local-model pass this time: the first walk's local qwen2.5:7b outputs are kept in the 2026-11-04 record; this pass needed claims checked against code and the gate driven by hand."
+ ],
+ "personas": {
+  "CFO": "CFO of a 400-person UK software company; approves spend; hates unsourced numbers and vague savings.",
+  "CTO-CISO": "CTO and acting CISO of a UK fintech; data leaving the building, supply chain, determinism, truth of security claims.",
+  "COO": "COO of a UK SaaS company with 12 product teams publishing weekly release notes; process, roll-out effort, staff change.",
+  "Procurement": "Procurement lead at a UK public-sector body; supplier, terms, support, licence, exit, data protection, hidden costs."
+ },
+ "held": [
+  "served page = committed index.html of 7aa8f37 byte for byte (SHA-256 above), HTTP 200; no request in the resource log after the page itself",
+  "every button worked: hyped draft REFUSED 3 of 6, honest draft PASS 5 of 5, seal verified then broken by the tamper, ledger valid then broken at #1 by the flip; no horizontal scroll at 375px",
+  "the demo receipt (agent-proof, 130/133, clean, live, CI green) matches agent-proof's CI log and its live page answers 200",
+  "the cost table's arithmetic: 130 hours at GBP 19.67 = GBP 2,557.10; seats = staff time + 2 x 12 x GBP 23.10; each 'against' line equals the difference of its rows",
+  "supplier, support terms, MIT, exit and data protection stated as in the supplier facts; the Konomi credit in the footer; no price of ours anywhere"
+ ],
+ "gaps": [
+  {
+   "from": "CTO-CISO",
+   "gap": "A real fault in the gate. 'It is 1000% faster.' SHIPPED with nothing checked: a percent was read only up to three digits before the sign, and a K/N score only up to four digits a side ('12345/12345' also shipped unread). And 'review time down 70 percent' was not read as a percent at all, though a fact may state a percent as '30 percent'.",
+   "done": "fixed in kernel.mjs extractClaims: a score or a percent of any length is a claim, a percent may be written '30%', '30 %', '30 percent' or '30 per cent' (any case), a thousands comma is kept as written ('1,000%'), and the decimal of '2.5%' is kept. A fact backing a percent may no longer have a thousands comma before the number either ('1,000%' is not backed by '21,000%'). Two new tests; both fail on the old kernel and pass on the new. 70 tests pass; witness v0.6 uncapped: 90/92 killed, 0 survivors, the same 2 reviewed equivalents with their existing written reasons; receipts/witness.json re-written for the new kernel. The examples' reports are unchanged byte for byte; the skill script is rebuilt; SKILL.md cites the new receipt."
+  },
+  {
+   "from": "CTO-CISO",
+   "gap": "'\"http\" appears only in comments and in the pattern that finds links': not quite. The script also has the check that the receipt's url is a web address (/^https?:\\/\\// and its error message).",
+   "done": "the answer now names all three places and says both patterns read text and never visit anything."
+  },
+  {
+   "from": "CTO-CISO",
+   "gap": "'Loads nothing and sends nothing' was true but only a promise: nothing on the page stopped a request.",
+   "done": "make-page.mjs now writes a Content-Security-Policy as its last step: default-src 'none' (no source anywhere, so no connection), scripts only by the SHA-256 of each of the page's own inline scripts, inline styles, data: images, base-uri and form-action 'none'. page.test.mjs checks the policy against the page independently on every CI run, and that nothing on the page loads from elsewhere. The security section and the CTO answer say so."
+  },
+  {
+   "from": "CTO-CISO",
+   "gap": "The script exits 3 on an internal error (cli.mjs); the page, SKILL.md and the README listed only 0, 1 and 2.",
+   "done": "all three, and the CLI's usage text, now list 3; SKILL.md says to treat any non-zero exit as do not publish."
+  },
+  {
+   "from": "CFO",
+   "gap": "The cost case priced the gate's running cost (electricity) but not the staff time it takes to add the step, so the gate route looked free to adopt; no payback figure.",
+   "done": "costcase.mjs takes the reader's set-up hours (an example of 4, to overwrite), priced at the same median wage and charged once in the first year to every route that adds a step (the gate and a cloud judge alike; none to the seats, which keeps the rented route at its floor), and reports the whole weeks of posts the saving takes to pay it back (0 with nothing to pay, none if nothing is saved). 14 tests; witness v0.6 28/28 killed. The page shows the input, the line and the payback; the CFO answers say what adoption costs."
+  },
+  {
+   "from": "CFO",
+   "gap": "The headline said GBP 3,955.79 back over 3 years and the gate's row said GBP 3,955.78: a penny apart, unexplained (at a 50% share the two are the same sum, each rounded on its own).",
+   "done": "a line under the table: each row is that route's cost, the saving is today's row minus post-proof's, and each figure is rounded to the penny on its own."
+  },
+  {
+   "from": "COO",
+   "gap": "After the third walk's whole-number fix, the diagram still said a percent is backed by 'a receipt fact that contains it', and step 3 said 'a measured fact contains it': the rule the fix removed.",
+   "done": "both now say a fact stating the same percent (and the same K/N for a score)."
+  },
+  {
+   "from": "COO",
+   "gap": "Times and quantities nobody measured: 'about five minutes', 'a fix takes minutes', 'minutes to remove', 'months to earn back', 'more trust than ten true claims earn'.",
+   "done": "removed or restated without the number."
+  },
+  {
+   "from": "CTO-CISO",
+   "gap": "'Where it fits' describes our own publishing pipeline as running this gate; that pipeline keeps its own vendored copy of an earlier version of the kernel.",
+   "done": "the page now says the pipeline has the fixes only once its copy is re-vendored, and that the page and the agent script run this repository's current, gated kernel."
+  }
+ ],
+ "notFixedHere": [
+  "Standard terms, an SLA and a warranty are still 'agreed per deployment': publishing standard terms is Simon's decision, not invented here.",
+  "si-didy-loop vendors an earlier copy of kernel.mjs (receiptgate.mjs, the first version); that is another repository, left for its own update.",
+  "The Agensi ZIP copied to agensi-listings/zips/ predates this change; the package CI builds now differs. Re-copying it, and the listing itself, belong to the shop build and are Simon's."
+ ]
+}

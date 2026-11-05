@@ -53,7 +53,8 @@ The input is one JSON object:
 - `sealedAt` (optional): when the post passes, the report includes a content-addressed post-receipt that
   binds the post's SHA-256 to the receipt's SHA-256.
 
-Exit code: **0 = SHIP**, **1 = REFUSE**, **2 = the input could not be used** (a reason on stderr).
+Exit code: **0 = SHIP**, **1 = REFUSE**, **2 = the input could not be used** (a reason on stderr), **3 = an
+internal error** (the script itself failed; the message is on stderr). Treat any non-zero exit as do not publish.
 
 Agent rule: run the gate before publishing; on REFUSE, change or remove each claim in `unbacked` and run
 it again; never publish on REFUSE, and never edit the receipt to make a post pass.
@@ -77,8 +78,8 @@ backed, sealed.
   this script run alone in an empty folder on the examples), the drift check, the receipt check, the witness
   mutation gate and the ZIP build.
 - **The mutation gate:** witness v0.6 (https://github.com/sjgant80-hub/witness, tag `v0.6`) made
-  91 single-operator changes (mutants) to the kernel and the tests caught 89 of them. The other 2 were reviewed as equivalent (they cannot change any output) and baselined with a written reason each. The receipt is
-  `receipts/witness.json` in the repository, for kernel SHA-256 `f873849968b1f1bb7550cb270cb7377a08f9ec907da7907e5e349da62f06a807`. With the repository
+  92 single-operator changes (mutants) to the kernel and the tests caught 90 of them. The other 2 were reviewed as equivalent (they cannot change any output) and baselined with a written reason each. The receipt is
+  `receipts/witness.json` in the repository, for kernel SHA-256 `22763d1fae0486cf7fa35b4cec738371c6c21e7a3f3f049b8178197a37ab0451`. With the repository
   checked out, `node gate.mjs --witness tools/witness.mjs` re-runs it.
 
 ## Where it stops
@@ -86,7 +87,9 @@ backed, sealed.
 - It does not fetch anything. Whoever builds the receipt must probe for real; a false receipt gets a false
   pass. It proves the post matches the receipt, not that the receipt is true.
 - It checks only checkable claims: URLs, K/N scores, percents, live / shipped / deployed / in production,
-  CI green / tests pass, verified / clean. "Fastest on the market" is not caught.
+  CI green / tests pass, verified / clean. "Fastest on the market" is not caught. A score or percent of any
+  length is read ("1000%", "12345/12345"), and a percent may be written "30%", "30 %", "30 percent" or
+  "30 per cent"; "30 percentage points" is not a percent.
 - A percent or a K/N score is backed by a fact only when the fact states the same whole number: "3%" is
   not backed by a fact saying "30%", nor "1/4" by "11/40". Write a percent in a fact as a percent ("30%" or
   "30 percent") and a score as K/N ("41/43"); it does not convert units or round.

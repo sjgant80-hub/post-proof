@@ -9,7 +9,7 @@
   "agensi": { "allow": ["url"], "creditPending": true },
   "scripts": {
     "build": "node make-page.mjs && node build-skill.mjs",
-    "test": "node --test kernel.test.mjs skill.test.mjs",
+    "test": "node --test kernel.test.mjs costcase.test.mjs skill.test.mjs page.test.mjs",
     "zip": "node make-zip.mjs",
     "gate": "node gate.mjs --witness tools/witness.mjs",
     "verify-receipt": "node gate.mjs --verify"

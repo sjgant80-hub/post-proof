@@ -199,6 +199,38 @@ test('checkClaims: a K/N score in a fact backs only the SAME whole score', () =>
   assert.equal(backs('it scored 41/43', 'caught 41 / 43'), true);
 });
 
+// 2026-11-05, the fourth buyer walk: "It is 1000% faster" shipped with nothing checked (a percent was read only up to three
+// digits, a score only up to four), and "down 70 percent" was not read as a percent at all, though a fact may say "percent".
+const pcts = (text) => extractClaims(text).filter((c) => c.type === 'pct').map((c) => [c.raw, c.value]);
+
+test('extractClaims: a score or percent of any length, and a percent in words, is a claim', () => {
+  assert.deepEqual(pcts('It is 1000% faster'), [['1000%', '1000']]);
+  assert.deepEqual(pcts('up 12000%'), [['12000%', '12000']]);
+  assert.deepEqual(pcts('up 1,000% in a year'), [['1,000%', '1,000']]);                 // thousands, as written
+  assert.deepEqual(pcts('v2.5% ok'), [['2.5%', '2.5']]);                                  // the decimal is kept
+  assert.deepEqual(pcts('down 30 percent'), [['30 percent', '30']]);
+  assert.deepEqual(pcts('down 30 per cent'), [['30 per cent', '30']]);
+  assert.deepEqual(pcts('down 30 PERCENT'), [['30 PERCENT', '30']]);                      // any case
+  assert.deepEqual(pcts('down 30percent'), [['30percent', '30']]);
+  assert.deepEqual(pcts('up 30 percentage points'), []);                                  // points are not percent
+  assert.deepEqual(pcts('the 30 per centre'), []);
+  assert.deepEqual(pcts('30% and 30 percent'), [['30%', '30'], ['30 percent', '30']]);
+  const big = extractClaims('scored 12345/12345').filter((c) => c.type === 'score');
+  assert.deepEqual(big.map((c) => [c.raw, c.killed, c.total]), [['12345/12345', 12345, 12345]]);
+});
+
+test('checkClaims: a long or worded percent and a long score are checked like any other', () => {
+  assert.equal(backs('It is 1000% faster', 'cut review time 30% on one team'), false);
+  assert.equal(backs('It is 1000% faster', 'job A ran 1000% faster'), true);
+  assert.equal(backs('up 1,000%', 'grew 21,000% in year one'), false);                    // inside a longer number
+  assert.equal(backs('up 1,000%', 'grew 1,000% in year one'), true);
+  assert.equal(backs('down 30%', 'down 1,30% (a decimal comma)'), false);                 // a decimal comma's tail
+  assert.equal(backs('review time down 70 percent', 'cut review time 30% on one team'), false);
+  assert.equal(backs('review time down 30 percent', 'cut review time 30% on one team'), true);
+  assert.equal(backs('scored 12345/12345', 'scored 12345/12345 runs'), true);
+  assert.equal(backs('scored 12345/12345', 'scored 41/43 runs'), false);
+});
+
 test('checkClaims: a foreign url is backed once whitelisted as a link fact', () => {
   assert.equal(checkClaims('see https://eur-lex.europa.eu/eli/reg/2024/1689/oj', RECEIPT).ok, true);
   assert.equal(checkClaims('see https://random.example/x', RECEIPT).ok, false);

@@ -22,10 +22,10 @@ test('costCase · the default case, every line from the sourced basis', () => {
   assert.equal(r.ok, true);
   assert.deepEqual(r.inputs, DEFAULTS);
   assert.deepEqual(r.hours, { checking: 130, takenOff: 65 });
-  assert.deepEqual(r.lines, { staff: 2557.1, takenOff: 1278.55, seats: 554.4, apiFrontier: 4.31, apiBedrock: 0.45, power: 0 });
+  assert.deepEqual(r.lines, { staff: 2557.1, takenOff: 1278.55, seats: 554.4, apiFrontier: 4.31, apiBedrock: 0.45, power: 0, setup: 78.68 });
   assert.deepEqual(r.perYear, { today: 2557.1, rentSeats: 3111.5, cloudFrontier: 1282.86, cloudBedrock: 1279, gate: 1278.55 });
-  assert.deepEqual(r.over, { today: 7911.57, rentSeats: 9626.86, cloudFrontier: 3969.12, cloudBedrock: 3957.18, gate: 3955.78 });
-  assert.deepEqual([r.savingPerYear, r.savingOver, r.versusSeatsOver], [1278.55, 3955.79, 5671.08]);
+  assert.deepEqual(r.over, { today: 7911.57, rentSeats: 9626.86, cloudFrontier: 4047.8, cloudBedrock: 4035.86, gate: 4034.46 });
+  assert.deepEqual([r.savingPerYear, r.savingOver, r.versusSeatsOver, r.paybackWeeks], [1278.55, 3877.11, 5592.4, 4]);
   assert.deepEqual(r.versusCloudOver, { frontier: 13.34, bedrock: 1.4 });
 });
 
@@ -79,6 +79,33 @@ test('costCase · the figures move with the basis, not with anything typed', () 
   assert.equal(flat.over.today, r2(2557.1 * 3));
 });
 
+// 2026-11-05, the fourth buyer walk (CFO): the case priced the running cost but not the hours it takes to add the step.
+test('costCase · set-up is staff time, once, in the first year, for every route that adds a step (the gate and a cloud judge alike)', () => {
+  const none = costCase(BASIS, { setupHours: 0 }), r = costCase(BASIS, { setupHours: 10, years: 2 });
+  assert.equal(r.lines.setup, r2(10 * 19.67));
+  assert.equal(none.lines.setup, 0);
+  const plain = costCase(BASIS, { setupHours: 0, years: 2 });
+  assert.deepEqual(r.perYear, plain.perYear);                                         // a yearly cost, it is not
+  for (const k of ['gate', 'cloudFrontier', 'cloudBedrock']) assert.equal(r.over[k], r2(plain.over[k] + r.lines.setup), k);
+  for (const k of ['today', 'rentSeats']) assert.equal(r.over[k], plain.over[k], k);  // nothing added to the seats: their floor
+  assert.equal(r.savingOver, r2(plain.savingOver - r.lines.setup));
+  assert.deepEqual(r.versusCloudOver, plain.versusCloudOver);                           // like for like
+  assert.equal(r.versusSeatsOver, r2(plain.versusSeatsOver - r.lines.setup));
+  assert.equal(costCase(BASIS, { setupHours: 0, years: 1 }).over.gate, costCase(BASIS, { setupHours: 0, years: 1 }).perYear.gate);
+});
+
+test('costCase · payback: whole weeks of posts until the saving has paid for the set-up', () => {
+  assert.equal(costCase(BASIS, {}).paybackWeeks, Math.ceil(78.68 * 52 / 1278.55));     // 3.2 weeks: the 4th week pays it
+  assert.equal(costCase(BASIS, {}).paybackWeeks, 4);
+  assert.equal(costCase(BASIS, { setupHours: 0 }).paybackWeeks, 0);                     // nothing to pay back
+  assert.equal(costCase(BASIS, { setupHours: 0, share: 0 }).paybackWeeks, 0);           // nothing to pay back, nothing saved
+  assert.equal(costCase(BASIS, { share: 0 }).paybackWeeks, null);                       // nothing saved: it never pays back
+  assert.equal(costCase(BASIS, { postsPerWeek: 0 }).paybackWeeks, null);
+  const slow = costCase(BASIS, { setupHours: 1000, postsPerWeek: 1, minutesPerPost: 1, share: 0.1 });
+  assert.equal(slow.paybackWeeks, Math.ceil(slow.lines.setup * 52 / slow.savingPerYear));
+  assert.ok(slow.paybackWeeks > 52 * 10);                                               // it can take longer than the case runs
+});
+
 test('over · CPI is applied to every year after the first, and only the years asked for', () => {
   assert.equal(over(100, 0.1, 1), 100);
   assert.equal(over(100, 0.1, 2), 210);
@@ -90,9 +117,10 @@ test('costCase · boundaries hold at both ends of every input', () => {
   for (const ok of [
     { postsPerWeek: 0 }, { postsPerWeek: 10000 }, { minutesPerPost: 0 }, { minutesPerPost: 480 },
     { share: 0 }, { share: 1 }, { reviewers: 0 }, { tokensIn: 0, tokensOut: 0 }, { secondsPerRun: 0 }, { secondsPerRun: 3600 },
-    { years: 1 }, { years: 10 },
+    { setupHours: 0 }, { setupHours: 1000 }, { years: 1 }, { years: 10 },
   ]) assert.equal(costCase(BASIS, ok).ok, true, JSON.stringify(ok));
   assert.equal(costCase(BASIS, { share: 1 }).perYear.gate, costCase(BASIS, { share: 1 }).lines.power);
+  assert.equal(costCase(BASIS, { setupHours: 1000 }).lines.setup, r2(1000 * 19.67));
   assert.equal(costCase(BASIS, { share: 0 }).savingPerYear, 0);
   assert.equal(costCase(BASIS, { postsPerWeek: 0 }).perYear.today, 0);
   assert.equal(costCase(BASIS, { years: 1 }).over.today, 2557.1);
@@ -117,6 +145,9 @@ test('costCase · each bad input refused with its reason', () => {
   assert.equal(why({ tokensOut: -1 }), 'tokens: numbers');
   assert.equal(why({ secondsPerRun: 3600.5 }), 'seconds for one gate run: 0 to 3,600');
   assert.equal(why({ secondsPerRun: -1 }), 'seconds for one gate run: 0 to 3,600');
+  assert.equal(why({ setupHours: 1000.5 }), 'hours to set it up: 0 to 1,000');
+  assert.equal(why({ setupHours: -1 }), 'hours to set it up: 0 to 1,000');
+  assert.equal(why({ setupHours: '4' }), 'hours to set it up: 0 to 1,000');
   assert.equal(why({ years: 0 }), 'years: 1 to 10');
   assert.equal(why({ years: 11 }), 'years: 1 to 10');
   assert.equal(why({ years: 2.5 }), 'years: 1 to 10');

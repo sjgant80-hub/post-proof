@@ -24,8 +24,8 @@ jobs:
           done
       - name: one source of truth (kernel.mjs = live page = skill script)
         run: node build-skill.mjs --check
-      - name: tests (the claim gate, the cost case, and the shipped skill script run alone as an agent store runs it)
-        run: node --test kernel.test.mjs costcase.test.mjs skill.test.mjs
+      - name: tests (the claim gate, the cost case, the shipped skill script run alone as an agent store runs it, and the page's Content-Security-Policy)
+        run: node --test kernel.test.mjs costcase.test.mjs skill.test.mjs page.test.mjs
       - name: the committed mutation receipts are for these kernels and these tests
         run: |
           node gate.mjs --verify

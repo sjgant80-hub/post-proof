@@ -11,7 +11,7 @@ refuses the inflated one, and names the exact unproven words.
 ## Agent skill: claim-receipt-gate
 
 The same kernel ships as one self-contained file an AI agent runs before it publishes:
-`node scripts/claim-receipt-gate.mjs examples/refuse.json` (exit 0 = SHIP, 1 = REFUSE, 2 = bad input).
+`node scripts/claim-receipt-gate.mjs examples/refuse.json` (exit 0 = SHIP, 1 = REFUSE, 2 = bad input, 3 = internal error).
 Skill layer built by Kar (weekly choosing-session, 2026-11-01). See [SKILL.md](SKILL.md). `node build-skill.mjs` regenerates the script from kernel.mjs + cli.mjs;
 `skill.test.mjs` runs it alone in an empty folder on `examples/`; `node gate.mjs --witness tools/witness.mjs`
 writes the uncapped witness v0.6 receipt to `receipts/witness.json`; `node make-zip.mjs` builds the
@@ -25,7 +25,10 @@ figure comes from `vendor/sovereign-enterprise/data/basis.json` (ONS wage and CP
 vendor list prices, each with its source), copied byte for byte from `sjgant80-hub/liveware` (recorded with its SHA-256 in
 `vendor/SOURCES.json`; CI re-fetches the source and compares). Floors, never top ends; no price of ours. `make-page.mjs`
 injects both kernels and the basis into the page, and fills every number the page states about the build from
-`receipts/`, `examples/` and the test files; CI rebuilds the page and fails on any difference.
+`receipts/`, `examples/` and the test files, and last writes the page's Content-Security-Policy (no source allowed anywhere;
+only the page's own inline scripts, each named by SHA-256), which `page.test.mjs` checks independently. CI rebuilds the
+page and fails on any difference. The cost case counts the reader's set-up hours once, in the first year, for every route
+that adds a step to the pipeline, and says how many weeks of posts pay them back.
 
 ## The problem it solves
 
@@ -68,7 +71,7 @@ rail's posts *provable*. It is wired in front of the rail's `postable` check (`p
 ## Run it
 
 ```bash
-node --test kernel.test.mjs costcase.test.mjs skill.test.mjs
+node --test kernel.test.mjs costcase.test.mjs skill.test.mjs page.test.mjs
 node gate.mjs --witness tools/witness.mjs                                               # kernel.mjs → receipts/witness.json
 node gate.mjs --witness tools/witness.mjs --kernel costcase.mjs --tests costcase.test.mjs   # → receipts/witness-costcase.json
 node gate.mjs --verify && node gate.mjs --verify --kernel costcase.mjs --tests costcase.test.mjs
@@ -76,7 +79,8 @@ node make-page.mjs
 ```
 
 CI (`.github/workflows/gate.yml`) runs on every push on GitHub's runner: witness cloned fresh at its `v0.6` tag (and
-`tools/` checked to be the same bytes), the vendored basis checked against its source, all tests, both receipts, the
+`tools/` checked to be the same bytes), the vendored basis checked against its source, all tests (the page's
+Content-Security-Policy included), both receipts, the
 Agensi ZIP, the witness mutation gate on both kernels (must be clean), and the page fixpoint.
 
 ## Honest limits (v1)
@@ -85,7 +89,8 @@ Checkable claims only — it backs facts a receipt can carry; it does not fact-c
 judge tone (the one-line "what it does" rides on trust, capped and visible). Tamper-evident and **not signed, by
 design**: the seals and the ledger show any change, not who sealed them; proving that needs a key, and this tool needs none
 (sign the sealed post-receipt with your existing release-signing key if you must). A fact backs a percent or a K/N score
-only when it states the same whole number ("3%" is not backed by "30%", nor "1/4" by "11/40"). You bring the receipt (the
+only when it states the same whole number ("3%" is not backed by "30%", nor "1/4" by "11/40"). A score or percent of any
+length is read ("1000%", "12345/12345"), and a percent written "70 percent" too; numbers written as words are not. You bring the receipt (the
 probes live in the rail's runner). (In our own pipeline the rail's live send to a real page also needs the owner's one-time channel connect;
 that is the rail's, not this gate's.) Not audited. Mutation-witnessed in CI (survivors carry a written equivalence
 argument). MIT.

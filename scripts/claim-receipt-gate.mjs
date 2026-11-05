@@ -136,10 +136,12 @@ function extractClaims(text) {
   let m;
   const urlRx = /https?:\/\/[^\s)\]]+/g;
   while ((m = urlRx.exec(text)) !== null) add({ type: 'url', raw: m[0], value: m[0].replace(/[.,;:]+$/, '') });
-  const scoreRx = /\b(\d{1,4})\s*\/\s*(\d{1,4})\b/g;
+  // 2026-11-05 (the fourth buyer walk): a score or percent of any length is a claim ("1000% faster" used to pass
+  // unread, as did "12345/12345"), and so is a percent written "30 percent" or "30 per cent", the way a fact may state it.
+  const scoreRx = /\b(\d+)\s*\/\s*(\d+)\b/g;
   while ((m = scoreRx.exec(text)) !== null) add({ type: 'score', raw: m[0], killed: Number(m[1]), total: Number(m[2]) });
-  const pctRx = /\b(\d{1,3}(?:\.\d+)?)\s*%/g;
-  while ((m = pctRx.exec(text)) !== null) add({ type: 'pct', raw: m[0], value: m[1] });
+  const pctRx = /(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?\s*(?:%|per ?cent\b)/gi;
+  while ((m = pctRx.exec(text)) !== null) add({ type: 'pct', raw: m[0], value: m[1] + (m[2] || '') });
   if (/\b(live|shipped|deployed|in production)\b/i.test(text)) add({ type: 'live', raw: 'live' });
   if (/\bci (?:is )?green\b|\bci passing\b|\btests? pass(?:ing|ed)?\b|\bgreen on [^.]*runner\b|\bbuild green\b/i.test(text)) add({ type: 'ci', raw: 'ci-green' });
   if (/\bwitness[- ]clean\b|\bmutation[- ]clean\b|\bgate[- ]?clean\b|\bprovably\b|\bverified\b/i.test(text)) add({ type: 'clean', raw: 'verified' });
@@ -148,14 +150,14 @@ function extractClaims(text) {
 
 // ── adjudicate every claim against the receipt ──────────────────────────────────────────────────
 // A number in a fact backs a claim only as the SAME whole number: neither side of it may continue the number, so
-// "3%" is not backed by a fact saying "30%", nor "1/4" by "11/40". A percent needs a fact that states it as a percent
-// ("31%", "31 percent", "31 per cent"); a K/N score needs the same K/N (spaces round the slash allowed).
+// "3%" is not backed by a fact saying "30%", nor "1/4" by "11/40", nor "1,000%" by "21,000%". A percent needs a fact that
+// states it as a percent ("31%", "31 percent", "31 per cent"); a K/N score needs the same K/N (spaces round the slash allowed).
 function factMatches(receipt, rx) {
   const facts = Array.isArray(receipt.facts) ? receipt.facts : [];
   return facts.some((f) => isObj(f) && isStr(f.value) && rx.test(f.value));
 }
 const scoreFact = (killed, total) => new RegExp('(?:^|[^\\d.])' + killed + '\\s*/\\s*' + total + '(?!\\.?\\d)');
-const pctFact = (value) => new RegExp('(?:^|[^\\d.])' + value.replace('.', '\\.') + '\\s*(?:%|per ?cent\\b)', 'i');
+const pctFact = (value) => new RegExp('(?:^|[^\\d.,])' + value.replace('.', '\\.') + '\\s*(?:%|per ?cent\\b)', 'i');
 function linkWhitelisted(receipt, value) {
   const facts = Array.isArray(receipt.facts) ? receipt.facts : [];
   return facts.some((f) => isObj(f) && f.key === 'link' && f.value === value);
@@ -270,14 +272,14 @@ function verifyPostLedger(chain) {
 // logic the live page runs) into scripts/claim-receipt-gate.mjs, the single file the Agensi skill runs.
 // It reads a draft post and the build-receipt behind it, pulls out every checkable claim (links, "live",
 // "CI green", "verified", K/N scores, percents) and says which ones the receipt backs. No model in the loop.
-// Exit 0 = SHIP (every checkable claim backed) · 1 = REFUSE · 2 = the input could not be used.
+// Exit 0 = SHIP (every checkable claim backed) · 1 = REFUSE · 2 = the input could not be used · 3 = an internal error.
 import { readFileSync } from 'node:fs';
 
 const USAGE = `usage: node claim-receipt-gate.mjs <input.json | ->
 input:  {"post": "<text>" | {"text"} | {"hook","reveal","cta"},
          "receipt": {"url", "live", "ci", "witness": {"clean","killed","total"} | null, "facts": [{"key","value"}]},
          "sealedAt": "<ISO time, optional: seal a passed post into a content-addressed post-receipt>"}
-output: a JSON report on stdout. exit 0 = SHIP, 1 = REFUSE, 2 = bad input`;
+output: a JSON report on stdout. exit 0 = SHIP, 1 = REFUSE, 2 = bad input, 3 = internal error`;
 
 class InputError extends Error {}
 const fail = (msg) => { throw new InputError(msg); };

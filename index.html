@@ -2,6 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-PxIbEJsRGWAFRefMNjf7w6SLUph83eArynRq3jV5aUE=' 'sha256-AhGWA36pMfnUd/MVdl24SOHT2XJ/5Rm2Gro3OzSU0E0=' 'sha256-2mhkfkz8DPUQY+3hMsshzhtcpmopCRMrbskWxhoqjzs=' 'sha256-g//r2fB5WY8HrtdEEg+2wNxVKt2VZ3j4gwUbgYjW5vs='; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
 <title>post-proof</title>
 <link rel="icon" href="data:,">
 <meta name="description" content="A checker for announcements: a release note, launch post or README ships only if the record of what was built backs every claim it makes. No AI judge.">
@@ -152,7 +153,7 @@
 
   <section id="start">
     <h2>Start here</h2>
-    <p class="lede">Seven steps, about five minutes. Everything runs in this page; nothing you type leaves your browser.</p>
+    <p class="lede">Seven steps. Everything runs in this page; nothing you type leaves your browser.</p>
     <ol class="steps">
       <li>Under <a href="#try">Try it</a>, press <b>Load a hyped draft</b>, then <b>▶ Gate the post</b>. The gate lists every
         claim it could check and refuses each one the build-receipt beside it does not back, with the reason.</li>
@@ -258,7 +259,7 @@
         <text x="24" y="328"><tspan class="g">CI green</tspan> → ci: "success"</text>
         <text x="24" y="348"><tspan class="g">verified / clean</tspan> → witness.clean: true</text>
         <text x="24" y="368"><tspan class="g">K/N score</tspan> → witness killed/total, or a fact</text>
-        <text x="24" y="388"><tspan class="g">percent</tspan> → a receipt fact that contains it</text>
+        <text x="24" y="388"><tspan class="g">percent</tspan> → a fact stating the same percent</text>
         <line class="rule" x1="24" y1="402" x2="376" y2="402"/>
         <text x="24" y="422" class="m">this run's receipt: live <tspan data-fact="refuse.r.live">false</tspan> · ci <tspan data-fact="refuse.r.ci">failure</tspan></text>
         <text x="24" y="440" class="m">witness <tspan data-fact="refuse.r.witness">41/50, not clean</tspan> · facts <tspan data-fact="refuse.r.facts">1</tspan></text>
@@ -294,13 +295,14 @@
     <h3>Step by step</h3>
     <ol class="steps">
       <li><b>The draft goes in.</b> A plain text, or a hook, a reveal and a call to action, which <code>postText()</code> joins.</li>
-      <li><b>The checkable claims come out.</b> <code>extractClaims()</code> finds links, K/N scores, percentages, and the words
+      <li><b>The checkable claims come out.</b> <code>extractClaims()</code> finds links, K/N scores and percentages of any length (a percent written "30%",
+        "30 percent" or "30 per cent"), and the words
         "live / shipped / deployed / in production", "CI green / tests pass", "verified / witness-clean". Anything else is prose,
         and prose is not judged.</li>
       <li><b>Each claim is matched to the field that can prove it.</b> <code>checkClaims()</code> backs a link only if it is the
         live product URL (and a 200 was seen) or a whitelisted link; "live" only if a 200 was seen; "CI green" only if CI
-        concluded success; "verified" only if the mutation test was clean; a score only at the exact killed/total; a percent
-        only if a measured fact contains it.</li>
+        concluded success; "verified" only if the mutation test was clean; a score only at the exact killed/total, or a fact
+        stating the same K/N; a percent only if a measured fact states the same number as a percent.</li>
       <li><b>One unbacked claim refuses the post.</b> <code>gatePost()</code> answers SHIP only when every checkable claim is
         backed, and names each unbacked one with its reason, so the writer (or the agent) fixes exactly those words.</li>
       <li><b>A shipped post is sealed.</b> <code>makePostReceipt()</code> binds the post's SHA-256 to the receipt's SHA-256 and
@@ -348,17 +350,17 @@
     <div class="cards two">
       <div class="organ"><div class="f">kernel.mjs</div>
         <div class="d">The rules: pulling claims out, checking each against the receipt, the seal, the ledger, SHA-256. Pure: it
-          never fetches, never writes, and garbage in gives a reason, never a crash. <span data-fact="lines.kernel">263</span> lines.</div>
-        <div class="p"><span data-fact="tests.kernel">42</span> tests · witness <span data-fact="w.tag">v0.6</span> caught
-          <span data-fact="w.k.killed">89</span> of <span data-fact="w.k.total">91</span> mutants, <span data-fact="w.k.ignored">2</span>
+          never fetches, never writes, and garbage in gives a reason, never a crash. <span data-fact="lines.kernel">265</span> lines.</div>
+        <div class="p"><span data-fact="tests.kernel">44</span> tests · witness <span data-fact="w.tag">v0.6</span> caught
+          <span data-fact="w.k.killed">90</span> of <span data-fact="w.k.total">92</span> mutants, <span data-fact="w.k.ignored">2</span>
           reviewed-equivalent with a written reason each, <span data-fact="w.k.survived">0</span> survivors · sha256
-          <span data-fact="w.k.sha">f873849968b1</span>…</div></div>
+          <span data-fact="w.k.sha">22763d1fae04</span>…</div></div>
       <div class="organ"><div class="f">costcase.mjs</div>
         <div class="d">The cost case on this page: your figures plus the sourced basis, floors not top ends, like for like.
-          Pure and total. <span data-fact="lines.costcase">85</span> lines.</div>
-        <div class="p"><span data-fact="tests.costcase">12</span> tests · witness <span data-fact="w.tag">v0.6</span> caught
-          <span data-fact="w.c.killed">24</span> of <span data-fact="w.c.total">24</span> mutants, <span data-fact="w.c.survived">0</span>
-          survivors · sha256 <span data-fact="w.c.sha">04a400cb589f</span>…</div></div>
+          Pure and total. <span data-fact="lines.costcase">92</span> lines.</div>
+        <div class="p"><span data-fact="tests.costcase">14</span> tests · witness <span data-fact="w.tag">v0.6</span> caught
+          <span data-fact="w.c.killed">28</span> of <span data-fact="w.c.total">28</span> mutants, <span data-fact="w.c.survived">0</span>
+          survivors · sha256 <span data-fact="w.c.sha">9a82ff24cb28</span>…</div></div>
       <div class="organ"><div class="f">vendor/sovereign-enterprise/data/basis.json</div>
         <div class="d">The sourced public figures the cost case reads (ONS, DESNZ, ECB, vendor list prices), each with its
           source link. Copied byte for byte; never edited here.</div>
@@ -366,7 +368,7 @@
           <span data-fact="basis.sha">83e9c2effa2f</span>… · CI re-fetches the source and compares</div></div>
       <div class="organ"><div class="f">cli.mjs → scripts/claim-receipt-gate.mjs</div>
         <div class="d">The command line (<span data-fact="lines.cli">67</span> lines): reads one JSON input, prints a JSON report,
-          exits 0 SHIP, 1 REFUSE, 2 bad input. <code>build-skill.mjs</code> joins it with the kernel into one file an agent
+          exits 0 SHIP, 1 REFUSE, 2 bad input, 3 internal error. <code>build-skill.mjs</code> joins it with the kernel into one file an agent
           runs alone: no network, no dependencies, writes nothing.</div>
         <div class="p">CI: build-skill.mjs --check fails on any drift</div></div>
       <div class="organ"><div class="f">skill.test.mjs + examples/</div>
@@ -376,8 +378,13 @@
           <span data-fact="ship.checked">5</span> backed, sealed</div></div>
       <div class="organ"><div class="f">make-page.mjs → index.html</div>
         <div class="d">Builds this page's generated parts: both kernels verbatim, the basis verbatim, every number about the
-          build, and the traced run. CI rebuilds the page and fails if one byte differs.</div>
+          build, the traced run, and last the Content-Security-Policy naming each of the page's scripts by SHA-256. CI rebuilds
+          the page and fails if one byte differs.</div>
         <div class="p">CI: page fixpoint (git diff --exit-code)</div></div>
+      <div class="organ"><div class="f">page.test.mjs</div>
+        <div class="d">Holds the page to "loads nothing, sends nothing": the policy allows no source anywhere, names exactly
+          the page's own inline scripts and no other, and no element on the page loads from elsewhere.</div>
+        <div class="p">CI: run with every test, on every push</div></div>
       <div class="organ"><div class="f">gate.mjs + receipts/</div>
         <div class="d">Runs the witness mutation test (it changes one operator at a time, such as &lt; into &lt;=, and re-runs the
           tests; a change the tests miss is a hole) over every mutant, and writes a receipt pinned to the kernel's, the tests' and
@@ -405,7 +412,8 @@
     <ol class="steps">
       <li><b>In this page.</b> Paste a draft and a receipt in <a href="#try">Try it</a>, press gate. Nothing leaves your browser.</li>
       <li><b>On the command line</b> (Node.js 20 or later). Clone <a href="https://github.com/sjgant80-hub/post-proof">the repo</a>, then
-        <code>node scripts/claim-receipt-gate.mjs examples/refuse.json</code>. Exit 0 = SHIP, 1 = REFUSE, 2 = the input could not be used.
+        <code>node scripts/claim-receipt-gate.mjs examples/refuse.json</code>. Exit 0 = SHIP, 1 = REFUSE, 2 = the input could not be used,
+        3 = an internal error (the script itself failed; the message is on stderr).
         The input is one JSON object: <code>{"post": …, "receipt": {"url","live","ci","witness","facts"}, "sealedAt"?}</code>.</li>
       <li><b>As an agent skill.</b> Give your agent <code>SKILL.md</code> and the script. Its rule: before posting, run the gate;
         on REFUSE, fix or cut each named claim and run it again; never publish on REFUSE, and never edit the receipt to make a post pass.</li>
@@ -448,12 +456,13 @@
     <div class="cards two">
       <div class="card"><div class="lab">CEO / founder</div><div class="sub">Launch at AI speed without the public
         correction. Every link, status and number published in the company's name has its evidence on file, and the overclaim
-        that costs more trust than ten true claims earn cannot ship by accident.</div></div>
+        that costs more trust than the true claims beside it earn cannot ship by accident.</div></div>
       <div class="card"><div class="lab">CFO</div><div class="sub">The saving is reviewer time: the cross-checking of links,
         statuses and scores the gate does instead. The <a href="#cost">cost case</a> computes it from your own volumes and the
-        ONS median wage. No seats to add, no per-call bill, no server: one file in your repository.</div></div>
+        ONS median wage, and counts the hours it takes to set up. No seats to add, no per-call bill, no server: one file in
+        your repository.</div></div>
       <div class="card"><div class="lab">COO</div><div class="sub">One rule for every channel, applied the same way by people,
-        agents and CI. A refusal names the exact words, so a fix takes minutes, not a review cycle. The refusals (and the ledger, if you keep one) show every
+        agents and CI. A refusal names the exact words, so the fix goes to those words, not round another review cycle. The refusals (and the ledger, if you keep one) show every
         decision and its reason: a process you can measure.</div></div>
       <div class="card"><div class="lab">CTO / CISO</div><div class="sub">Deterministic, no AI model, no network calls, no
         dependencies, MIT source in one file you can read in an afternoon. Mutation-tested on every push on GitHub's
@@ -473,7 +482,10 @@
     <h3>Security and data protection</h3>
     <ul class="plain">
       <li><b>Nothing leaves your machines.</b> GitHub Pages serves this page as one static file; after that it loads no
-        scripts, fonts or trackers from anywhere and sends nothing. The command-line script makes no network calls, reads only
+        scripts, fonts or trackers from anywhere and sends nothing, and your browser enforces that: the page's
+        Content-Security-Policy (the first lines of its source) allows no source anywhere (<code>default-src 'none'</code>),
+        so it cannot connect to anything, and lets only its own inline scripts run, each named by its SHA-256.
+        <code>page.test.mjs</code> checks that policy against the page on every CI run. The command-line script makes no network calls, reads only
         the input you name, and writes no files. <code>make-zip.mjs</code> checks the shipped script for network, eval,
         child-process, environment and file-write patterns on every CI run and refuses to build if one appears. The one
         declared pattern is URL text, because the gate reads the links in a draft; it never visits them.</li>
@@ -526,8 +538,8 @@
         receipt from your CI's own probes, never by hand.</li>
       <li><b>It checks the checkable only.</b> "Fastest on the market" is not a link, score, percent, live, CI or verified
         claim, so it is not caught. That is a stated limit, not a hidden one.</li>
-      <li><b>It catches rounding-up, not a determined evader.</b> Numbers written as words ("fifty out of fifty", "a hundred
-        percent") are not parsed. It guards against an agent or a busy person overclaiming by habit; pair it with a human
+      <li><b>It catches rounding-up, not a determined evader.</b> A score or percent of any length is read ("1000%",
+        "12345/12345", "70 percent"), but numbers written as words ("fifty out of fifty", "a hundred percent") are not parsed. It guards against an agent or a busy person overclaiming by habit; pair it with a human
         read for anything adversarial.</li>
       <li><b>Numbers are matched as written, as whole numbers.</b> A percent or a K/N score is backed only when a receipt fact
         states the same number: "3%" is not backed by a fact saying "30%", nor "1/4" by "11/40", and a percent needs a fact
@@ -543,10 +555,11 @@
     </ul>
 
     <h3>The case for the board</h3>
-    <p class="lede">One overclaimed figure in a launch post costs credibility that true claims take months to earn back, and
+    <p class="lede">One overclaimed figure in a launch post costs credibility that true claims are slow to earn back, and
       advertising rules on both sides of the Atlantic already expect the evidence to be held before an objective claim is
       published. post-proof makes that check mechanical for every link, status and score your people and your AI agents
-      publish; it keeps the evidence; it sends nothing outside; it costs one CI step to adopt and minutes to remove.
+      publish; it keeps the evidence; it sends nothing outside; it costs one CI step to adopt, and removing it is deleting
+      that step and one file.
       <b>Recommendation:</b> pilot it on one product's release notes for a month, and judge it on its refusals and what they caught.</p>
   </section>
 
@@ -564,6 +577,7 @@
       <div><label for="c-tin">tokens a cloud model reads, each post</label><input type="number" id="c-tin" min="0" step="100"></div>
       <div><label for="c-tout">tokens it writes, each post</label><input type="number" id="c-tout" min="0" step="100"></div>
       <div><label for="c-secs">seconds for one gate run</label><input type="number" id="c-secs" min="0" max="3600" step="1"></div>
+      <div><label for="c-setup">hours to set it up, once</label><input type="number" id="c-setup" min="0" max="1000" step="1"></div>
       <div><label for="c-years">years</label><input type="number" id="c-years" min="1" max="10" step="1"></div>
     </div>
     <p class="mut">The starting values are an example, not a measurement: replace them with yours. "Share the gate takes
@@ -572,8 +586,14 @@
       renting help would add; if you already pay for those seats, read it as the checking they leave with your reviewers.
       Tokens are the word-pieces a cloud AI model reads and writes, and bills by; the two token fields are only for the
       cloud-model rows: what such a model would read (the draft, the receipt, its instructions) and write to judge one post.
-      post-proof itself uses no AI model, so it has no tokens and no such bill.</p>
+      post-proof itself uses no AI model, so it has no tokens and no such bill. "Hours to set it up" is the staff time to add
+      the step to your pipeline (the CI step and the receipt, as in <a href="#agent">For your agent and CI</a>), priced at the
+      same median wage and counted once, in the first year. A cloud model judging each post needs the same step, so it is
+      charged the same hours; none are charged to the seats, which keeps the rented route at its floor.</p>
     <div id="cost-out" aria-live="polite"></div>
+    <p class="mut">Each row is what that route costs you; the saving is today's row minus post-proof's. "A year" is the running
+      cost each year; "over" the years adds CPI to every year after the first and the set-up once. Each figure is rounded to the
+      penny on its own, so a total can differ by a penny from the sum of the figures beside it.</p>
     <h3>What the money does not show</h3>
     <div class="tablewrap"><table class="money">
       <thead><tr><th>route</th><th>same answer every run</th><th>draft stays on your machines</th></tr></thead>
@@ -598,15 +618,19 @@
   <section id="questions">
     <h2>Questions buyers asked</h2>
     <p class="lede">Before calling this page finished, four buyer personas (a CFO, a CTO / CISO, a COO and a procurement lead)
-      read it cold three times: a first pass on a local open model, a second adversarial read against the code, and a third
+      read it cold four times: a first pass on a local open model, a second adversarial read against the code, then twice
       on the served page, trying the gate as a buyer would. They listed every question it left open. These are the
       questions and the straight answers. The gaps they found were fixed, not explained away: unexplained jargon, a figure
-      shown without its value, a wrong statement of where the gate sits in our own pipeline, two security sentences that
-      said more than the code does, and one real fault in the gate itself (a number inside a longer number used to back a
-      claim, so "3%" passed against a fact saying "30%"; a fact now backs only the same whole number, with tests for each
-      edge). The records are in the repository:
-      <a href="https://github.com/sjgant80-hub/post-proof/blob/master/walks/2026-11-04-buyer-walk.json">the first two walks</a>
-      and <a href="https://github.com/sjgant80-hub/post-proof/blob/master/walks/2026-11-05-served-walk.json">the third</a>.</p>
+      shown without its value, a wrong statement of where the gate sits in our own pipeline, security sentences that
+      said more than the code does, a cost case that left out the hours to set it up, and two real faults in the gate itself.
+      First, a number inside a longer number backed a claim, so "3%" passed against a fact saying "30%"; a fact now backs only
+      the same whole number. Second, a percent of four or more digits, or one written "70 percent", was not read at all, so
+      "1000% faster" shipped unchecked; every score and percent is now read whatever its length, and a percent in words
+      too. Each fault has tests for every edge. The fourth read also made the page's "sends nothing" a rule your browser
+      enforces (its Content-Security-Policy), not only a promise. The records are in the repository:
+      <a href="https://github.com/sjgant80-hub/post-proof/blob/master/walks/2026-11-04-buyer-walk.json">the first two walks</a>,
+      <a href="https://github.com/sjgant80-hub/post-proof/blob/master/walks/2026-11-05-served-walk.json">the third</a>
+      and <a href="https://github.com/sjgant80-hub/post-proof/blob/master/walks/2026-11-05-fourth-walk.json">the fourth</a>.</p>
     <h3>CFO</h3>
     <ul class="plain">
       <li><b>What does it cost us to use?</b> The software is MIT-licensed: the source carries no licence fee, no seats and no
@@ -614,6 +638,9 @@
       <li><b>Where do the minutes and the share in the cost case come from?</b> From you. The starting values are an example
         to overwrite. The sourced figures are the wage, CPI, the list prices, the exchange rate and electricity, each shown
         with its value and its link.</li>
+      <li><b>What does it cost to adopt?</b> Staff time: someone adds the CI step and builds the receipt from probes your
+        pipeline already runs. Put those hours into the cost case (hours to set it up); it charges them once, in the first year,
+        and shows how many weeks of posts pay them back. Support, if you want it, is agreed per deployment.</li>
       <li><b>Is the saving cash?</b> It is reviewer time given back, priced at the median wage with on-costs left out. Whether
         it becomes cash depends on what you do with that time; the page does not pretend otherwise.</li>
       <li><b>Why does a cloud model come out almost as cheap?</b> Because, to be fair to it, the case credits it with taking
@@ -625,10 +652,12 @@
       <li><b>Can we verify "no network" ourselves?</b> Yes. The script is one text file. Its only import is
         <code>node:fs</code>, used to read the input. Search it for a network call (<code>fetch(</code>,
         <code>XMLHttpRequest</code>, <code>WebSocket</code>, <code>node:http</code>, <code>node:https</code>, <code>node:net</code>):
-        there is none. The word "fetch" appears once, in a comment saying it never fetches; "http" appears only in comments and
-        in the pattern that finds links in a draft (<code>/https?:\/\/…/</code>), which reads links and never visits them. <code>make-zip.mjs</code> runs that
+        there is none. The word "fetch" appears once, in a comment saying it never fetches; "http" appears only in comments, in
+        the pattern that finds links in a draft (<code>/https?:\/\/…/</code>), and in the check that the receipt's
+        <code>url</code> is a web address (<code>/^https?:\/\//</code> and its error message): both read text and never visit anything. <code>make-zip.mjs</code> runs that
         search on every CI run and refuses to build the package if a network call appears. For this page, open your
-        browser's network panel: after the page itself loads, nothing else is requested.</li>
+        browser's network panel: after the page itself loads, nothing else is requested; and its Content-Security-Policy, in
+        the first lines of the source, is what stops it (<code>default-src 'none'</code>, scripts only by SHA-256).</li>
       <li><b>Which platforms?</b> Anywhere Node.js 20 or later runs. CI runs it on Linux; the committed mutation receipt was
         produced on <span data-fact="w.k.platform">Windows</span> (Node <span data-fact="w.k.node">v25.7.0</span>), and CI reproduces it.</li>
       <li><b>What if someone fakes the receipt?</b> The gate cannot tell; it proves the post matches the receipt. Build the
@@ -700,11 +729,11 @@
       false confidence this gate exists to refuse. A rule gives the same answer every time, can be read in full, and can be
       tested to destruction. The gate's whole job is to be boring and certain about a narrow thing.</p>
     <h3>The evidence</h3>
-    <p>The kernel has <span data-fact="tests.kernel">42</span> tests. The witness mutation test (<span data-fact="w.tag">v0.6</span>)
-      made <span data-fact="w.k.total">91</span> single-operator changes to it and the tests caught
-      <span data-fact="w.k.killed">89</span>; the other <span data-fact="w.k.ignored">2</span> were reviewed as unable to change any
+    <p>The kernel has <span data-fact="tests.kernel">44</span> tests. The witness mutation test (<span data-fact="w.tag">v0.6</span>)
+      made <span data-fact="w.k.total">92</span> single-operator changes to it and the tests caught
+      <span data-fact="w.k.killed">90</span>; the other <span data-fact="w.k.ignored">2</span> were reviewed as unable to change any
       output and are recorded with a written reason each; <span data-fact="w.k.survived">0</span> survived. The cost-case kernel:
-      <span data-fact="tests.costcase">12</span> tests, <span data-fact="w.c.killed">24</span> of <span data-fact="w.c.total">24</span>
+      <span data-fact="tests.costcase">14</span> tests, <span data-fact="w.c.killed">28</span> of <span data-fact="w.c.total">28</span>
       changes caught. The shipped script reproduces the committed example reports byte for byte. All of it re-runs on
       GitHub's runner at every push, in public.</p>
     <h3>What it does not prove</h3>
@@ -714,7 +743,9 @@
     <h3>Where it fits</h3>
     <p>After whatever writes the post (a person, an AI agent, a post generator) and before whatever publishes it. In our own
       publishing pipeline the prose is scrubbed first, this gate then checks the scrubbed text (so a scrub that changed a
-      claim would be refused), and only then does the posting rail apply its own rate limits: no receipt, no post.</p>
+      claim would be refused), and only then does the posting rail apply its own rate limits: no receipt, no post. That
+      pipeline keeps its own vendored copy of the kernel, so it has the fixes the buyer walks found only once that copy is
+      re-vendored from here; the copy on this page and in the agent script is always this repository's current, gated one.</p>
     <h3>Check us</h3>
     <p>The source, the receipts and the CI runs are public: <a href="https://github.com/sjgant80-hub/post-proof">the repository</a>
       · <a href="https://github.com/sjgant80-hub/post-proof/actions">every CI run</a> ·
@@ -865,10 +896,12 @@ function extractClaims(text) {
   let m;
   const urlRx = /https?:\/\/[^\s)\]]+/g;
   while ((m = urlRx.exec(text)) !== null) add({ type: 'url', raw: m[0], value: m[0].replace(/[.,;:]+$/, '') });
-  const scoreRx = /\b(\d{1,4})\s*\/\s*(\d{1,4})\b/g;
+  // 2026-11-05 (the fourth buyer walk): a score or percent of any length is a claim ("1000% faster" used to pass
+  // unread, as did "12345/12345"), and so is a percent written "30 percent" or "30 per cent", the way a fact may state it.
+  const scoreRx = /\b(\d+)\s*\/\s*(\d+)\b/g;
   while ((m = scoreRx.exec(text)) !== null) add({ type: 'score', raw: m[0], killed: Number(m[1]), total: Number(m[2]) });
-  const pctRx = /\b(\d{1,3}(?:\.\d+)?)\s*%/g;
-  while ((m = pctRx.exec(text)) !== null) add({ type: 'pct', raw: m[0], value: m[1] });
+  const pctRx = /(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?\s*(?:%|per ?cent\b)/gi;
+  while ((m = pctRx.exec(text)) !== null) add({ type: 'pct', raw: m[0], value: m[1] + (m[2] || '') });
   if (/\b(live|shipped|deployed|in production)\b/i.test(text)) add({ type: 'live', raw: 'live' });
   if (/\bci (?:is )?green\b|\bci passing\b|\btests? pass(?:ing|ed)?\b|\bgreen on [^.]*runner\b|\bbuild green\b/i.test(text)) add({ type: 'ci', raw: 'ci-green' });
   if (/\bwitness[- ]clean\b|\bmutation[- ]clean\b|\bgate[- ]?clean\b|\bprovably\b|\bverified\b/i.test(text)) add({ type: 'clean', raw: 'verified' });
@@ -877,14 +910,14 @@ function extractClaims(text) {
 
 // ── adjudicate every claim against the receipt ──────────────────────────────────────────────────
 // A number in a fact backs a claim only as the SAME whole number: neither side of it may continue the number, so
-// "3%" is not backed by a fact saying "30%", nor "1/4" by "11/40". A percent needs a fact that states it as a percent
-// ("31%", "31 percent", "31 per cent"); a K/N score needs the same K/N (spaces round the slash allowed).
+// "3%" is not backed by a fact saying "30%", nor "1/4" by "11/40", nor "1,000%" by "21,000%". A percent needs a fact that
+// states it as a percent ("31%", "31 percent", "31 per cent"); a K/N score needs the same K/N (spaces round the slash allowed).
 function factMatches(receipt, rx) {
   const facts = Array.isArray(receipt.facts) ? receipt.facts : [];
   return facts.some((f) => isObj(f) && isStr(f.value) && rx.test(f.value));
 }
 const scoreFact = (killed, total) => new RegExp('(?:^|[^\\d.])' + killed + '\\s*/\\s*' + total + '(?!\\.?\\d)');
-const pctFact = (value) => new RegExp('(?:^|[^\\d.])' + value.replace('.', '\\.') + '\\s*(?:%|per ?cent\\b)', 'i');
+const pctFact = (value) => new RegExp('(?:^|[^\\d.,])' + value.replace('.', '\\.') + '\\s*(?:%|per ?cent\\b)', 'i');
 function linkWhitelisted(receipt, value) {
   const facts = Array.isArray(receipt.facts) ? receipt.facts : [];
   return facts.some((f) => isObj(f) && f.key === 'link' && f.value === value);
@@ -1003,15 +1036,16 @@ const COSTCASE = (function () {
 // release notes, launch posts and READMEs by hand costs a team in staff time today, what the rented routes add, and
 // what running the gate costs. Every external figure is read from the vendored, sourced basis
 // (vendor/sovereign-enterprise/data/basis.json); the post count, the minutes, the share, the reviewer count, the token
-// sizes and the run time are the reader's own (the defaults are an example to overwrite, not a measurement).
+// sizes, the run time and the set-up hours are the reader's own (the defaults are an example to overwrite, not a measurement).
 // Floors, never top ends: staff time at the UK median hourly wage with on-costs left out; CPI applied to every later
 // year. Like for like: a cloud model judging every post is credited with the SAME share of the checking taken off as
 // the gate, so the two differ only in the per-call bill (and in where the draft goes); rented assistant seats help
-// each reviewer but take no checking off, so the staff time stays. No price of ours appears here: these are the
-// buyer's own costs. Pure, total, deterministic: garbage in gives { ok: false, why }, never a throw.
+// each reviewer but take no checking off, so the staff time stays. Setting up is staff time too, charged once in the first
+// year to every route that adds a step to the pipeline (the gate, and a cloud judge alike); none is charged to the seats,
+// which keeps the rented route at its floor. No price of ours appears here: these are the buyer's own costs. Pure, total, deterministic: garbage in gives { ok: false, why }, never a throw.
 
 const DEFAULTS = Object.freeze({
-  postsPerWeek: 10, minutesPerPost: 15, share: 0.5, reviewers: 2, tokensIn: 3000, tokensOut: 500, secondsPerRun: 1, years: 3,
+  postsPerWeek: 10, minutesPerPost: 15, share: 0.5, reviewers: 2, tokensIn: 3000, tokensOut: 500, secondsPerRun: 1, setupHours: 4, years: 3,
 });
 const BASIS_KEYS = Object.freeze([
   'wageMedianHourly', 'cpi', 'seat.copilot', 'frontier', 'bedrockGptOss120b', 'fxGbpPerUsd', 'electricityPencePerKwh', 'laptopExtraWatts',
@@ -1044,7 +1078,7 @@ function over(perYear, cpi, years) {
 }
 
 /** the case. input (all optional, defaults above): postsPerWeek, minutesPerPost, share (0 to 1), reviewers,
- *  tokensIn, tokensOut (what a cloud model would read and write to judge one post), secondsPerRun, years */
+ *  tokensIn, tokensOut (what a cloud model would read and write to judge one post), secondsPerRun, setupHours (once), years */
 function costCase(basis, input) {
   try {
     const f = figures(basis);
@@ -1056,6 +1090,7 @@ function costCase(basis, input) {
     if (!Number.isInteger(i.reviewers) || i.reviewers < 0) return { ok: false, why: 'reviewers: a whole number' };
     if (!isNum(i.tokensIn) || !isNum(i.tokensOut)) return { ok: false, why: 'tokens: numbers' };
     if (!isNum(i.secondsPerRun) || i.secondsPerRun > 3600) return { ok: false, why: 'seconds for one gate run: 0 to 3,600' };
+    if (!isNum(i.setupHours) || i.setupHours > 1000) return { ok: false, why: 'hours to set it up: 0 to 1,000' };
     if (!Number.isInteger(i.years) || i.years < 1 || i.years > 10) return { ok: false, why: 'years: 1 to 10' };
     const runs = i.postsPerWeek * 52;                                                     // posts checked a year
     const hours = runs * i.minutesPerPost / 60;                                           // hours of checking a year
@@ -1065,18 +1100,23 @@ function costCase(basis, input) {
     const apiFrontier = r2(runs * (i.tokensIn * f.fIn + i.tokensOut * f.fOut) / 1e6 * f.fx);   // a frontier model judging every post
     const apiBedrock = r2(runs * (i.tokensIn * f.bIn + i.tokensOut * f.bOut) / 1e6 * f.fx);    // an open model on a cloud, every post
     const power = r2(runs * i.secondsPerRun / 3600 * f.watts / 1000 * f.pence / 100);     // the gate: a laptop's extra draw while it runs
+    const setup = r2(i.setupHours * f.wage);                                              // once: adding the step to the pipeline
     const perYear = {
       today: staff, rentSeats: r2(staff + seats),
       cloudFrontier: r2(staff - takenOff + apiFrontier), cloudBedrock: r2(staff - takenOff + apiBedrock),
       gate: r2(staff - takenOff + power),
     };
-    const total = Object.fromEntries(Object.entries(perYear).map(([k, v]) => [k, over(v, f.cpi, i.years)]));
+    const once = { today: 0, rentSeats: 0, cloudFrontier: setup, cloudBedrock: setup, gate: setup };   // in the first year
+    const total = Object.fromEntries(Object.entries(perYear).map(([k, v]) => [k, r2(over(v, f.cpi, i.years) + once[k])]));
+    const savingPerYear = r2(perYear.today - perYear.gate);
     return {
       ok: true, inputs: i,
       hours: { checking: r2(hours), takenOff: r2(hours * i.share) },
-      lines: { staff, takenOff, seats, apiFrontier, apiBedrock, power },
+      lines: { staff, takenOff, seats, apiFrontier, apiBedrock, power, setup },
       perYear, over: total,
-      savingPerYear: r2(perYear.today - perYear.gate), savingOver: r2(total.today - total.gate),
+      // whole weeks of posts until the saving has paid for the set-up; 0 when there is none to pay, null when it never pays
+      paybackWeeks: setup <= 0 ? 0 : savingPerYear > 0 ? Math.ceil(setup * 52 / savingPerYear) : null,
+      savingPerYear, savingOver: r2(total.today - total.gate),
       versusSeatsOver: r2(total.rentSeats - total.gate),
       versusCloudOver: { frontier: r2(total.cloudFrontier - total.gate), bedrock: r2(total.cloudBedrock - total.gate) },
     };
@@ -1405,7 +1445,7 @@ function costCase(basis, input) {
   const D = COSTCASE.DEFAULTS;
   const fields = [
     ['c-posts', 'postsPerWeek', 1], ['c-minutes', 'minutesPerPost', 1], ['c-share', 'share', 100], ['c-reviewers', 'reviewers', 1],
-    ['c-tin', 'tokensIn', 1], ['c-tout', 'tokensOut', 1], ['c-secs', 'secondsPerRun', 1], ['c-years', 'years', 1],
+    ['c-tin', 'tokensIn', 1], ['c-tout', 'tokensOut', 1], ['c-secs', 'secondsPerRun', 1], ['c-setup', 'setupHours', 1], ['c-years', 'years', 1],
   ];
   for (const [id, key, scale] of fields) $(id).value = String(D[key] * scale);
 
@@ -1429,7 +1469,7 @@ function costCase(basis, input) {
       '</td><td class="n">' + esc(money(r.over[k])) + '</td></tr>';
     let html = '<div class="headline">With the gate: <b>' + esc(money(r.savingPerYear)) + '</b> of reviewer time back a year, ' +
       '<b>' + esc(num.format(r.hours.takenOff)) + ' hours</b> of the <b>' + esc(num.format(r.hours.checking)) + '</b> spent checking, ' +
-      'and <b>' + esc(money(r.savingOver)) + '</b> over ' + esc(yrs) + '.</div>';
+      'and <b>' + esc(money(r.savingOver)) + '</b> over ' + esc(yrs) + ' once the set-up is paid for.</div>';
     html += '<div class="tablewrap"><table class="money"><thead><tr><th>route</th><th>a year</th><th>over ' + esc(yrs) + '</th></tr></thead><tbody>' +
       row('Today: checking by hand', 'today') +
       row('Assistant seats for ' + esc(r.inputs.reviewers) + ' reviewer' + (r.inputs.reviewers === 1 ? '' : 's') + ' (' + esc(copilot) + '): they help, the checking stays', 'rentSeats') +
@@ -1444,6 +1484,10 @@ function costCase(basis, input) {
       '<li><b>Against a cloud model judging every post:</b> ' + esc(money(r.versusCloudOver.frontier)) + ' (' + esc(frontier) + ') or ' +
         esc(money(r.versusCloudOver.bedrock)) + ' (' + esc(bedrock) + ') over ' + esc(yrs) + ': its bill is ' + esc(money(r.lines.apiFrontier)) + ' or ' + esc(money(r.lines.apiBedrock)) + ' a year at your volumes.</li>' +
       '<li><b>The gate\'s own running cost:</b> ' + esc(money(r.lines.power)) + ' a year (a laptop\'s extra draw for the seconds it runs, rounded to the penny).</li>' +
+      '<li><b>Setting it up:</b> ' + esc(num.format(r.inputs.setupHours)) + ' hours once, at the same wage = ' + esc(money(r.lines.setup)) +
+        ' in the first year, for the gate and for a cloud judge alike. ' + (r.paybackWeeks === null ? 'With nothing taken off, it never pays back.' :
+        r.paybackWeeks === 0 ? 'There is nothing to pay back.' : 'The saving pays it back within ' + esc(num.format(r.paybackWeeks)) +
+        ' week' + (r.paybackWeeks === 1 ? '' : 's') + ' of posts.') + '</li>' +
       '</ul>';
     $('cost-out').innerHTML = html;
   }
