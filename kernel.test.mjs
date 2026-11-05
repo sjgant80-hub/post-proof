@@ -165,6 +165,40 @@ test('checkClaims: a score can also be backed by a measured fact (not only the w
   assert.equal(checkClaims('it BEATS 16/16 on the eval', withBeats).ok, true);
 });
 
+// 2026-11-05: found on the buyer walk — a number inside a longer number used to back a claim ("3%" passed against a fact
+// saying "30%", "1/4" against "11/40"). A fact now backs a number only as the same whole number.
+const withFacts = (...values) => ({ url: 'https://x', live: true, ci: 'success', witness: null, facts: values.map((value, i) => ({ key: 'f' + i, value })) });
+const backs = (text, ...values) => checkClaims(text, withFacts(...values)).ok;
+
+test('checkClaims: a percent is backed only by the SAME whole percent in a fact', () => {
+  assert.equal(backs('review time down 30%', 'cut review time 30% on one team'), true);
+  assert.equal(backs('review time down 3%', 'cut review time 30% on one team'), false);   // the digits after it
+  assert.equal(backs('review time down 0%', 'cut review time 30% on one team'), false);   // the digit before it
+  assert.equal(backs('down 30%', 'cut 130% of it'), false);                               // a longer number
+  assert.equal(backs('down 30%', 'cut 1.30% of it'), false);                              // a decimal's tail
+  assert.equal(backs('down 30%', 'cut 30.5% of it'), false);                              // a decimal's head
+  assert.equal(backs('down 30.5%', 'cut 30.5% of it'), true);
+  assert.equal(backs('down 30.5%', 'cut 3015% of it'), false);                            // the dot is literal
+  assert.equal(backs('down 31%', '31% fewer errors'), true);                              // at the start of the fact
+  assert.equal(backs('down 31%', 'down 31 %'), true);                                     // a space before the sign
+  assert.equal(backs('down 31%', 'grew 31 per cent'), true);
+  assert.equal(backs('down 31%', 'grew 31 Percent'), true);                               // any case
+  assert.equal(backs('down 31%', 'grew 31 percentage points'), false);                    // points are not percent
+  assert.equal(backs('down 31%', '31 users asked for it'), false);                        // a count is not a percent
+});
+
+test('checkClaims: a K/N score in a fact backs only the SAME whole score', () => {
+  assert.equal(backs('it scored 11/40', 'scored 11/40 tasks'), true);
+  assert.equal(backs('it scored 1/4', 'scored 11/40 tasks'), false);                      // inside a longer score
+  assert.equal(backs('it scored 1/4', 'scored 1/40 tasks'), false);                       // the total runs on
+  assert.equal(backs('it scored 1/4', 'scored 1/4.5'), false);                            // a decimal total
+  assert.equal(backs('it scored 1/4', 'v2.1/4 runs'), false);                             // a decimal's tail
+  assert.equal(backs('it scored 1/4', '1/4 of runs'), true);                              // at the start of the fact
+  assert.equal(backs('it scored 1/4', 'one in four, 1/4.'), true);                        // a full stop after it
+  assert.equal(backs('it scored 41 / 43', 'caught 41/43'), true);                         // spaces round the slash
+  assert.equal(backs('it scored 41/43', 'caught 41 / 43'), true);
+});
+
 test('checkClaims: a foreign url is backed once whitelisted as a link fact', () => {
   assert.equal(checkClaims('see https://eur-lex.europa.eu/eli/reg/2024/1689/oj', RECEIPT).ok, true);
   assert.equal(checkClaims('see https://random.example/x', RECEIPT).ok, false);

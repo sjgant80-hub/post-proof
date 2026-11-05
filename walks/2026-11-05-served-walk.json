@@ -1,0 +1,79 @@
+{
+ "kind": "post-proof.buyer-walk",
+ "v": 1,
+ "date": "2026-11-05",
+ "page": {
+  "url": "https://sjgant80-hub.github.io/post-proof/",
+  "commit": "98a0e5b",
+  "servedSha256": "8997670e10aa4d7ccde42807b9b2c54b02dde985044b7d42278b1b6e3ed1fa8a",
+  "note": "the page as GitHub Pages served it (HTTP 200), byte for byte the committed index.html of 98a0e5b; read rendered in a browser, scripts running, so the cost table and the source list were read as a buyer sees them"
+ },
+ "method": [
+  "Third walk, after the two in walks/2026-11-04-buyer-walk.json. Kar read the served page cold as the same four buyers, rendered with its scripts running, and used it as a buyer would: pressed every button (both drafts, gate, seal, tamper, ledger, flip), changed the cost inputs (including an out-of-range share), and gated drafts of its own against edited receipts.",
+  "Every statement a buyer would rely on was checked against the code it describes: kernel.mjs, cli.mjs, scripts/claim-receipt-gate.mjs, make-zip.mjs, costcase.mjs, LICENSE and the page's own scripts. The browser's network log was read for the served page.",
+  "No local-model pass this time: the first walk's local qwen2.5:7b outputs are kept in the 2026-11-04 record; this pass needed claims checked against code and the gate driven by hand."
+ ],
+ "personas": {
+  "CFO": "CFO of a 400-person UK software company; approves spend; hates unsourced numbers and vague savings.",
+  "CTO-CISO": "CTO and acting CISO of a UK fintech; data leaving the building, supply chain, determinism, truth of security claims.",
+  "COO": "COO of a UK SaaS company with 12 product teams publishing weekly release notes; process, roll-out effort, staff change.",
+  "Procurement": "Procurement lead at a UK public-sector body; supplier, terms, support, licence, exit, data protection, hidden costs."
+ },
+ "held": [
+  "served page = committed index.html byte for byte; only one request (the page itself) in the network log; no console errors",
+  "every button worked; the out-of-range share showed '0% to 100%'; no horizontal scroll at 375px",
+  "the cost table: today GBP 2,557.10 a year (130 hours at the ONS median wage); the gate takes 50% (the example share) off; the 3-year saving equals today minus the gate row; the seat row equals staff time plus 2 seats x 12 x GBP 23.10; every figure listed with its value and its link",
+  "supplier, support terms, MIT, exit and data protection stated as in the supplier facts; no price of ours anywhere"
+ ],
+ "gaps": [
+  {
+   "from": "CTO-CISO",
+   "gap": "A real fault in the gate. Trying the honest receipt with a fact 'cut review time 30% on one team', the draft 'review time down 3%' PASSED: a percent was backed by any fact containing its digits ('3' is inside '30%'), and a score by any fact containing its text ('1/4' is inside '11/40'). The page said the gate 'never waves a number through'.",
+   "done": "fixed in kernel.mjs: a fact backs a percent only when it states the same whole number as a percent ('30%', '30 percent', '30 per cent'), and a K/N score only when it states the same whole K/N (spaces round the slash allowed); neither side of the number may continue it. Two new tests cover every edge (digits before and after, decimals, start of the fact, a full stop after, case, 'percentage points', a count that is not a percent). 62 tests pass; witness v0.6 uncapped 89/91 killed, 0 survivors, the same 2 reviewed equivalents baselined with their existing written reasons; receipts/witness.json re-written for the new kernel. The examples' reports are unchanged byte for byte."
+  },
+  {
+   "from": "CTO-CISO",
+   "gap": "'Search it for fetch, http or net. make-zip.mjs does exactly that and fails the build if it finds one': not true as written. 'http' is in the script (comments and the link pattern) and 'fetch' is in a comment; make-zip looks for network CALLS and allows URL text as a declared pattern.",
+   "done": "rewritten: the only import is node:fs; the network calls to search for are named; where 'fetch' and 'http' do appear is said; make-zip's check is described as it is."
+  },
+  {
+   "from": "CTO-CISO",
+   "gap": "'Change one field and verification names it': verifyPostReceipt answers valid true or false; it does not name the field. Only the ledger names something (the first broken entry).",
+   "done": "rewritten: a changed sealed post-receipt no longer verifies; a changed ledger entry is named by its position."
+  },
+  {
+   "from": "CTO-CISO",
+   "gap": "The traced run shows 'https://example.org/csv-checker.' (with a full stop) backed as the live product URL, while the receipt URL has no full stop. Looks like a bug.",
+   "done": "explained under the trace: a report quotes each claim as written; a trailing full stop, comma, colon or semicolon is dropped before the comparison (kernel.mjs extractClaims)."
+  },
+  {
+   "from": "CTO-CISO",
+   "gap": "'Tamper-evident, not yet signed ... not built yet' reads as an unfinished feature.",
+   "done": "stated as the design it is: the seals show any change, not who sealed; proving who needs a key and the tool is built to need none (no account, no key); sign the sealed post-receipt with your existing release-signing key if you must. The README's 'v2' line says the same now."
+  },
+  {
+   "from": "CFO",
+   "gap": "The source list describes the laptop figure as 'the extra draw of in-browser AI', on a page that says the gate uses no AI.",
+   "done": "a line under the sources: the basis is shared with other cost cases and its descriptions are general; here the figure stands for a laptop's extra draw while the gate script runs."
+  },
+  {
+   "from": "COO",
+   "gap": "'A percent or a K/N score is backed when a fact's value contains it' (the old, faulty rule) in the answer on adding a fact, and 'percent matching is textual' in the risks.",
+   "done": "both now state the whole-number rule with examples; SKILL.md's 'Where it stops' says the same."
+  },
+  {
+   "from": "Procurement",
+   "gap": "Who holds the copyright, and where is a security issue reported? Neither is on the page.",
+   "done": "Ownership and the procurement answers now say the repository's LICENSE file names the copyright holder and grants the MIT terms, and that security issues are reported through the supplier's site (the supplier facts: contact through that site)."
+  },
+  {
+   "from": "Procurement",
+   "gap": "The ledger section said it is 'the audit trail a regulator asks for', and the README cited 'EU AI Act transparency, 2 Aug 2026' for it. No regulation named asks for this ledger; the page had already replaced the AI Act card for overreach.",
+   "done": "the ledger is now 'the record you show when anyone asks what was claimed and what backed it'; the README cites CAP Code 3.7 and the FTC substantiation policy, as the page does."
+  }
+ ],
+ "notFixedHere": [
+  "Standard terms, an SLA and a warranty are still 'agreed per deployment': publishing standard terms is Simon's decision, not invented here.",
+  "si-didy-loop vendors an earlier copy of kernel.mjs (receiptgate.mjs) with the old number matching; that is another repository, left for its own update."
+ ]
+}

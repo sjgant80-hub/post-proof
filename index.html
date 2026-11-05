@@ -217,9 +217,9 @@
 
   <section>
     <h2>The post ledger: every claim made, and what backed it</h2>
-    <p class="lede">Each gate decision, shipped or refused, lands on a SHA-256 hash chain. This is the
-      audit trail a regulator (or your own future self) asks for. Tamper with any entry and the chain
-      breaks visibly.</p>
+    <p class="lede">Each gate decision, shipped or refused, lands on a SHA-256 hash chain: the record you show
+      when anyone (a reviewer, an auditor, your own future self) asks what was claimed and what backed it. Tamper
+      with any entry and the chain breaks at that entry.</p>
     <div class="row">
       <button class="go" id="ledger">Run the honest + hyped drafts onto the ledger</button>
       <button id="tamper-ledger">Now flip a refused post to "shipped"</button>
@@ -335,6 +335,9 @@
 </ul>
 </div>
 <!-- ⟦TRACE-END⟧ -->
+    <p class="mut">A report quotes each claim as written, punctuation included. Before a link is compared, a full stop,
+      comma, colon or semicolon at its end is dropped: that is why <code>https://example.org/csv-checker.</code>, at the end
+      of a sentence, is backed by a receipt URL without the full stop.</p>
   </section>
 
   <section id="blueprint">
@@ -345,11 +348,11 @@
     <div class="cards two">
       <div class="organ"><div class="f">kernel.mjs</div>
         <div class="d">The rules: pulling claims out, checking each against the receipt, the seal, the ledger, SHA-256. Pure: it
-          never fetches, never writes, and garbage in gives a reason, never a crash. <span data-fact="lines.kernel">258</span> lines.</div>
-        <div class="p"><span data-fact="tests.kernel">40</span> tests · witness <span data-fact="w.tag">v0.6</span> caught
-          <span data-fact="w.k.killed">91</span> of <span data-fact="w.k.total">93</span> mutants, <span data-fact="w.k.ignored">2</span>
+          never fetches, never writes, and garbage in gives a reason, never a crash. <span data-fact="lines.kernel">263</span> lines.</div>
+        <div class="p"><span data-fact="tests.kernel">42</span> tests · witness <span data-fact="w.tag">v0.6</span> caught
+          <span data-fact="w.k.killed">89</span> of <span data-fact="w.k.total">91</span> mutants, <span data-fact="w.k.ignored">2</span>
           reviewed-equivalent with a written reason each, <span data-fact="w.k.survived">0</span> survivors · sha256
-          <span data-fact="w.k.sha">e0b027f53c4d</span>…</div></div>
+          <span data-fact="w.k.sha">f873849968b1</span>…</div></div>
       <div class="organ"><div class="f">costcase.mjs</div>
         <div class="d">The cost case on this page: your figures plus the sourced basis, floors not top ends, like for like.
           Pure and total. <span data-fact="lines.costcase">85</span> lines.</div>
@@ -483,7 +486,8 @@
         script's output with committed reports on every push. Anyone can re-run the mutation test on the same bytes; the
         receipts name the exact kernel, tests and witness by SHA-256.</li>
       <li><b>Tamper-evident records.</b> Sealed post-receipts and the hash-chained ledger use SHA-256, tested against known
-        vectors. Change one field and verification names it.</li>
+        vectors. Change any field of a sealed post-receipt and it no longer verifies; change any ledger entry and
+        verification names the first entry that changed.</li>
     </ul>
 
     <h3>Roll-out</h3>
@@ -508,7 +512,10 @@
         To start, or to ask anything, contact us through that site.</li>
       <li><b>Support, SLA, warranty and liability:</b> agreed per deployment, in each deployment's agreement.</li>
       <li><b>Ownership:</b> MIT licence, so the software carries no licence fee. The source is yours to read, run, change and keep. It keeps running without us: no
-        account, no server, no key, nothing calls home.</li>
+        account, no server, no key, nothing calls home. The repository's <code>LICENSE</code> file names the copyright holder
+        and the terms.</li>
+      <li><b>Security issues:</b> report them through the supplier's site. Any change to the code, a fix included, is a public
+        commit, and the same CI re-gates it.</li>
       <li><b>Exit:</b> delete one file and one CI step. Your ledger and receipts are plain JSON files you already hold.</li>
     </ul>
 
@@ -522,9 +529,13 @@
       <li><b>It catches rounding-up, not a determined evader.</b> Numbers written as words ("fifty out of fifty", "a hundred
         percent") are not parsed. It guards against an agent or a busy person overclaiming by habit; pair it with a human
         read for anything adversarial.</li>
-      <li><b>Percent matching is textual.</b> A percent is backed when a receipt fact contains it; write facts as measured.</li>
-      <li><b>Tamper-evident, not yet signed.</b> The seals and the ledger hash-verify; signing with an issuer key and anchoring
-        outside your systems is not built yet.</li>
+      <li><b>Numbers are matched as written, as whole numbers.</b> A percent or a K/N score is backed only when a receipt fact
+        states the same number: "3%" is not backed by a fact saying "30%", nor "1/4" by "11/40", and a percent needs a fact
+        written as a percent ("30%", "30 percent"). It does not convert units or round; write facts as measured.</li>
+      <li><b>Tamper-evident, not signed, by design.</b> The seals and the ledger hash-verify, so any change is detectable; they
+        do not prove who sealed them. Proving that needs a key, and this tool is built to need none (no account, no key,
+        nothing to hold). If you must prove who published, sign the sealed post-receipt with the release-signing key you
+        already use.</li>
       <li><b>Not independently audited.</b> It is mutation-tested in public CI on every push, and every mutant the tests do not
         catch carries a written argument that it cannot change any output.</li>
       <li><b>The cost case is a model, not a measurement.</b> It takes your figures; the saving is reviewer time given back, not
@@ -577,7 +588,9 @@
       and it can be small. The reasons to choose the gate there are the two columns in this table, and the exact words it names.</p>
     <h3>Where every figure comes from</h3>
     <ul class="plain src" id="cost-sources"></ul>
-    <p class="mut">The basis is copied byte for byte from <span data-fact="basis.repo">sjgant80-hub/liveware</span> at commit
+    <p class="mut">The basis is shared with other cost cases, so its descriptions are general: the laptop figure is described
+      there as the extra draw of in-browser AI, and here it stands for a laptop's extra draw while the gate script runs
+      (post-proof runs no AI model). The basis is copied byte for byte from <span data-fact="basis.repo">sjgant80-hub/liveware</span> at commit
       <span data-fact="basis.commit">ee580e4</span> (SHA-256 <span data-fact="basis.sha">83e9c2effa2f</span>…), and CI re-fetches the source and
       compares on every push. It is embedded in this page, so the case works offline.</p>
   </section>
@@ -585,11 +598,15 @@
   <section id="questions">
     <h2>Questions buyers asked</h2>
     <p class="lede">Before calling this page finished, four buyer personas (a CFO, a CTO / CISO, a COO and a procurement lead)
-      read it cold, twice: a first pass on a local open model, then a second, adversarial read. They listed every question
-      it left open. These are the questions and the straight answers; the gaps they found in the page itself (unexplained
-      jargon, a figure shown without its value, a wrong statement of where the gate sits in our own pipeline) were fixed
-      above. The full record is <a href="https://github.com/sjgant80-hub/post-proof/blob/master/walks/2026-11-04-buyer-walk.json">in
-      the repository</a>.</p>
+      read it cold three times: a first pass on a local open model, a second adversarial read against the code, and a third
+      on the served page, trying the gate as a buyer would. They listed every question it left open. These are the
+      questions and the straight answers. The gaps they found were fixed, not explained away: unexplained jargon, a figure
+      shown without its value, a wrong statement of where the gate sits in our own pipeline, two security sentences that
+      said more than the code does, and one real fault in the gate itself (a number inside a longer number used to back a
+      claim, so "3%" passed against a fact saying "30%"; a fact now backs only the same whole number, with tests for each
+      edge). The records are in the repository:
+      <a href="https://github.com/sjgant80-hub/post-proof/blob/master/walks/2026-11-04-buyer-walk.json">the first two walks</a>
+      and <a href="https://github.com/sjgant80-hub/post-proof/blob/master/walks/2026-11-05-served-walk.json">the third</a>.</p>
     <h3>CFO</h3>
     <ul class="plain">
       <li><b>What does it cost us to use?</b> The software is MIT-licensed: the source carries no licence fee, no seats and no
@@ -605,9 +622,13 @@
     </ul>
     <h3>CTO / CISO</h3>
     <ul class="plain">
-      <li><b>Can we verify "no network" ourselves?</b> Yes. The script is one text file: search it for <code>fetch</code>,
-        <code>http</code> or <code>net</code>. <code>make-zip.mjs</code> does exactly that on every CI run and fails the build if
-        it finds one. For this page, open your browser's network panel: after the page loads, nothing is requested.</li>
+      <li><b>Can we verify "no network" ourselves?</b> Yes. The script is one text file. Its only import is
+        <code>node:fs</code>, used to read the input. Search it for a network call (<code>fetch(</code>,
+        <code>XMLHttpRequest</code>, <code>WebSocket</code>, <code>node:http</code>, <code>node:https</code>, <code>node:net</code>):
+        there is none. The word "fetch" appears once, in a comment saying it never fetches; "http" appears only in comments and
+        in the pattern that finds links in a draft (<code>/https?:\/\/…/</code>), which reads links and never visits them. <code>make-zip.mjs</code> runs that
+        search on every CI run and refuses to build the package if a network call appears. For this page, open your
+        browser's network panel: after the page itself loads, nothing else is requested.</li>
       <li><b>Which platforms?</b> Anywhere Node.js 20 or later runs. CI runs it on Linux; the committed mutation receipt was
         produced on <span data-fact="w.k.platform">Windows</span> (Node <span data-fact="w.k.node">v25.7.0</span>), and CI reproduces it.</li>
       <li><b>What if someone fakes the receipt?</b> The gate cannot tell; it proves the post matches the receipt. Build the
@@ -631,8 +652,9 @@
         ("live", "CI green", "verified") are matched in English only, so in another language those claims go unchecked.</li>
       <li><b>How exactly do we add a fact?</b> A fact is a pair in the receipt's <code>facts</code> list: a key, and the
         measured statement as you would quote it, for example <code>{"key": "review-time", "value": "cut review time 30% on one
-        team"}</code>. A percent or a K/N score in the draft is backed when a fact's value contains it, so "review time down 30%"
-        passes against that fact and "down 70%" does not. An outbound link is whitelisted with a fact keyed <code>link</code>
+        team"}</code>. A percent or a K/N score in the draft is backed when a fact's value states the same number as a whole
+        number, so "review time down 30%" passes against that fact, and "down 70%" and "down 3%" do not. Write a percent in a
+        fact as a percent ("30%" or "30 percent"), and a score as K/N ("41/43"). An outbound link is whitelisted with a fact keyed <code>link</code>
         whose value is the exact URL.</li>
       <li><b>Does it fit our build system?</b> Any build system works: the receipt is five fields (<code>url</code>,
         <code>live</code>, <code>ci</code>, <code>witness</code>, <code>facts</code>) you fill from whatever your pipeline
@@ -654,6 +676,9 @@
         own environment and controls; its tests, receipts and CI runs are public for your own assessment.</li>
       <li><b>Is there lock-in or a hidden cost?</b> No. MIT licence, no account, nothing calls home. Exit is deleting one file and
         one CI step; your ledger and receipts are plain JSON you already hold.</li>
+      <li><b>Who holds the copyright, and where do we report a security issue?</b> The repository's <code>LICENSE</code> file
+        names the copyright holder and grants the MIT terms; the agent package ships the same file. Report a security issue
+        through the supplier's site.</li>
     </ul>
   </section>
 
@@ -675,9 +700,9 @@
       false confidence this gate exists to refuse. A rule gives the same answer every time, can be read in full, and can be
       tested to destruction. The gate's whole job is to be boring and certain about a narrow thing.</p>
     <h3>The evidence</h3>
-    <p>The kernel has <span data-fact="tests.kernel">40</span> tests. The witness mutation test (<span data-fact="w.tag">v0.6</span>)
-      made <span data-fact="w.k.total">93</span> single-operator changes to it and the tests caught
-      <span data-fact="w.k.killed">91</span>; the other <span data-fact="w.k.ignored">2</span> were reviewed as unable to change any
+    <p>The kernel has <span data-fact="tests.kernel">42</span> tests. The witness mutation test (<span data-fact="w.tag">v0.6</span>)
+      made <span data-fact="w.k.total">91</span> single-operator changes to it and the tests caught
+      <span data-fact="w.k.killed">89</span>; the other <span data-fact="w.k.ignored">2</span> were reviewed as unable to change any
       output and are recorded with a written reason each; <span data-fact="w.k.survived">0</span> survived. The cost-case kernel:
       <span data-fact="tests.costcase">12</span> tests, <span data-fact="w.c.killed">24</span> of <span data-fact="w.c.total">24</span>
       changes caught. The shipped script reproduces the committed example reports byte for byte. All of it re-runs on
@@ -851,10 +876,15 @@ function extractClaims(text) {
 }
 
 // ── adjudicate every claim against the receipt ──────────────────────────────────────────────────
-function factHas(receipt, value) {
+// A number in a fact backs a claim only as the SAME whole number: neither side of it may continue the number, so
+// "3%" is not backed by a fact saying "30%", nor "1/4" by "11/40". A percent needs a fact that states it as a percent
+// ("31%", "31 percent", "31 per cent"); a K/N score needs the same K/N (spaces round the slash allowed).
+function factMatches(receipt, rx) {
   const facts = Array.isArray(receipt.facts) ? receipt.facts : [];
-  return facts.some((f) => isObj(f) && isStr(f.value) && f.value.indexOf(value) !== -1);
+  return facts.some((f) => isObj(f) && isStr(f.value) && rx.test(f.value));
 }
+const scoreFact = (killed, total) => new RegExp('(?:^|[^\\d.])' + killed + '\\s*/\\s*' + total + '(?!\\.?\\d)');
+const pctFact = (value) => new RegExp('(?:^|[^\\d.])' + value.replace('.', '\\.') + '\\s*(?:%|per ?cent\\b)', 'i');
 function linkWhitelisted(receipt, value) {
   const facts = Array.isArray(receipt.facts) ? receipt.facts : [];
   return facts.some((f) => isObj(f) && f.key === 'link' && f.value === value);
@@ -882,10 +912,10 @@ function checkClaims(text, receipt) {
       else why = 'claims verified or clean but the receipt witness is not clean';
     } else if (c.type === 'score') {
       if (isObj(receipt.witness) && receipt.witness.killed === c.killed && receipt.witness.total === c.total) { ok = true; why = 'the witness killed count'; }
-      else if (factHas(receipt, c.raw)) { ok = true; why = 'a measured fact'; }
+      else if (factMatches(receipt, scoreFact(c.killed, c.total))) { ok = true; why = 'a measured fact'; }
       else why = 'claims a ' + c.raw + ' score the receipt does not back';
     } else if (c.type === 'pct') {
-      if (factHas(receipt, c.raw) || factHas(receipt, c.value)) { ok = true; why = 'a measured fact'; }
+      if (factMatches(receipt, pctFact(c.value))) { ok = true; why = 'a measured fact'; }
       else why = 'claims ' + c.raw + ' but no receipt fact backs it';
     }
     (ok ? backed : unbacked).push({ ...c, why });

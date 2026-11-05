@@ -46,8 +46,9 @@ refuses anything the proof doesn't back.
   post's hash + the build-receipt's hash + the backed claims). It verifies anywhere, and the gate
   **refuses to seal a post that failed**.
 - **appendPostLedger / verifyPostLedger** — every gate decision (shipped or refused) lands on a
-  SHA-256 hash chain. Tamper with any entry and the chain breaks. This is the audit trail a
-  regulator (EU AI Act transparency, 2 Aug 2026) — or your own future self — asks for.
+  SHA-256 hash chain. Tamper with any entry and the chain breaks at that entry: the record you show when anyone
+  asks what was claimed and what backed it. (The UK CAP Code rule 3.7 and the US FTC substantiation policy both expect the
+  evidence for an objective claim to be held before it is published.)
 
 The build-receipt is proof-of-play produced by **real probes**: a live 200, CI's conclusion, the
 mutation-witness verdict, a whitelist of measured facts. The kernel is pure and never fetches — the
@@ -81,10 +82,12 @@ Agensi ZIP, the witness mutation gate on both kernels (must be clean), and the p
 ## Honest limits (v1)
 
 Checkable claims only — it backs facts a receipt can carry; it does not fact-check free prose or
-judge tone (the one-line "what it does" rides on trust, capped and visible). Tamper-evident, **not
-yet signed/anchored** (Ed25519 issuer signing + external anchor is v2). You bring the receipt (the
-probes live in the rail's runner). The live send to a real page needs the one-time channel connect —
-it can't be faked. Not audited. Mutation-witnessed in CI (survivors carry a written equivalence
+judge tone (the one-line "what it does" rides on trust, capped and visible). Tamper-evident and **not signed, by
+design**: the seals and the ledger show any change, not who sealed them; proving that needs a key, and this tool needs none
+(sign the sealed post-receipt with your existing release-signing key if you must). A fact backs a percent or a K/N score
+only when it states the same whole number ("3%" is not backed by "30%", nor "1/4" by "11/40"). You bring the receipt (the
+probes live in the rail's runner). (In our own pipeline the rail's live send to a real page also needs the owner's one-time channel connect;
+that is the rail's, not this gate's.) Not audited. Mutation-witnessed in CI (survivors carry a written equivalence
 argument). MIT.
 
 ## Supplier and support

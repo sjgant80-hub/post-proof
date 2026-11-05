@@ -147,10 +147,15 @@ function extractClaims(text) {
 }
 
 // ── adjudicate every claim against the receipt ──────────────────────────────────────────────────
-function factHas(receipt, value) {
+// A number in a fact backs a claim only as the SAME whole number: neither side of it may continue the number, so
+// "3%" is not backed by a fact saying "30%", nor "1/4" by "11/40". A percent needs a fact that states it as a percent
+// ("31%", "31 percent", "31 per cent"); a K/N score needs the same K/N (spaces round the slash allowed).
+function factMatches(receipt, rx) {
   const facts = Array.isArray(receipt.facts) ? receipt.facts : [];
-  return facts.some((f) => isObj(f) && isStr(f.value) && f.value.indexOf(value) !== -1);
+  return facts.some((f) => isObj(f) && isStr(f.value) && rx.test(f.value));
 }
+const scoreFact = (killed, total) => new RegExp('(?:^|[^\\d.])' + killed + '\\s*/\\s*' + total + '(?!\\.?\\d)');
+const pctFact = (value) => new RegExp('(?:^|[^\\d.])' + value.replace('.', '\\.') + '\\s*(?:%|per ?cent\\b)', 'i');
 function linkWhitelisted(receipt, value) {
   const facts = Array.isArray(receipt.facts) ? receipt.facts : [];
   return facts.some((f) => isObj(f) && f.key === 'link' && f.value === value);
@@ -178,10 +183,10 @@ function checkClaims(text, receipt) {
       else why = 'claims verified or clean but the receipt witness is not clean';
     } else if (c.type === 'score') {
       if (isObj(receipt.witness) && receipt.witness.killed === c.killed && receipt.witness.total === c.total) { ok = true; why = 'the witness killed count'; }
-      else if (factHas(receipt, c.raw)) { ok = true; why = 'a measured fact'; }
+      else if (factMatches(receipt, scoreFact(c.killed, c.total))) { ok = true; why = 'a measured fact'; }
       else why = 'claims a ' + c.raw + ' score the receipt does not back';
     } else if (c.type === 'pct') {
-      if (factHas(receipt, c.raw) || factHas(receipt, c.value)) { ok = true; why = 'a measured fact'; }
+      if (factMatches(receipt, pctFact(c.value))) { ok = true; why = 'a measured fact'; }
       else why = 'claims ' + c.raw + ' but no receipt fact backs it';
     }
     (ok ? backed : unbacked).push({ ...c, why });

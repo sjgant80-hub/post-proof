@@ -77,8 +77,8 @@ backed, sealed.
   this script run alone in an empty folder on the examples), the drift check, the receipt check, the witness
   mutation gate and the ZIP build.
 - **The mutation gate:** witness v0.6 (https://github.com/sjgant80-hub/witness, tag `v0.6`) made
-  93 single-operator changes (mutants) to the kernel and the tests caught 91 of them. The other 2 were reviewed as equivalent (they cannot change any output) and baselined with a written reason each. The receipt is
-  `receipts/witness.json` in the repository, for kernel SHA-256 `e0b027f53c4d02a3f29b1ab8bc92853faf15e9d1aa1cb40646a0659f17e96727`. With the repository
+  91 single-operator changes (mutants) to the kernel and the tests caught 89 of them. The other 2 were reviewed as equivalent (they cannot change any output) and baselined with a written reason each. The receipt is
+  `receipts/witness.json` in the repository, for kernel SHA-256 `f873849968b1f1bb7550cb270cb7377a08f9ec907da7907e5e349da62f06a807`. With the repository
   checked out, `node gate.mjs --witness tools/witness.mjs` re-runs it.
 
 ## Where it stops
@@ -87,7 +87,9 @@ backed, sealed.
   pass. It proves the post matches the receipt, not that the receipt is true.
 - It checks only checkable claims: URLs, K/N scores, percents, live / shipped / deployed / in production,
   CI green / tests pass, verified / clean. "Fastest on the market" is not caught.
-- A percent is backed when a receipt fact contains that text; write facts as measured.
+- A percent or a K/N score is backed by a fact only when the fact states the same whole number: "3%" is
+  not backed by a fact saying "30%", nor "1/4" by "11/40". Write a percent in a fact as a percent ("30%" or
+  "30 percent") and a score as K/N ("41/43"); it does not convert units or round.
 - Numbers written as words ("fifty out of fifty", "a hundred percent") are not parsed: it stops habitual
   rounding-up, not a writer deliberately evading it.
 - A bare number that is not a score or a percent ("seven layers") is left alone by design.
