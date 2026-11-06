@@ -11,7 +11,7 @@
 // no receipt, no post.
 
 export const CI_STATES = Object.freeze(['success', 'failure', null]);
-export const CLAIM_TYPES = Object.freeze(['url', 'live', 'ci', 'clean', 'score', 'pct']);
+export const CLAIM_TYPES = Object.freeze(['url', 'live', 'ci', 'clean', 'score', 'pct', 'mult']);
 
 const isStr = (v) => typeof v === 'string';
 const isBool = (v) => typeof v === 'boolean';
@@ -128,17 +128,37 @@ export function extractClaims(text) {
   const seen = new Set();
   const add = (c) => { const k = c.type + '|' + c.raw; if (!seen.has(k)) { seen.add(k); claims.push(c); } };
   let m;
-  const urlRx = /https?:\/\/[^\s)\]]+/g;
-  while ((m = urlRx.exec(text)) !== null) add({ type: 'url', raw: m[0], value: m[0].replace(/[.,;:]+$/, '') });
+  // The fifth walk: < > " and ` cannot stand in a link unencoded (RFC 3986), so they end one ("<https://…>", an HTML href,
+  // a quoted or `code` link were refused, the report naming the link with its bracket or quote); and a ! ? … or a closing
+  // quote at the end is the sentence's, like the full stop.
+  const urlRx = /https?:\/\/[^\s)\]<>"`]+/g;
+  while ((m = urlRx.exec(text)) !== null) add({ type: 'url', raw: m[0], value: m[0].replace(/[.,;:!?'…]+$/, '') });
+  // 2026-11-05 (the fifth buyer walk): a link is one claim, so the rest is read with every link blanked out ("reg/2024/1689"
+  // inside a link was read as a score, "/deployed" as a live claim).
+  const rest = text.replace(urlRx, ' ');
   // 2026-11-05 (the fourth buyer walk): a score or percent of any length is a claim ("1000% faster" used to pass
   // unread, as did "12345/12345"), and so is a percent written "30 percent" or "30 per cent", the way a fact may state it.
-  const scoreRx = /\b(\d+)\s*\/\s*(\d+)\b/g;
-  while ((m = scoreRx.exec(text)) !== null) add({ type: 'score', raw: m[0], killed: Number(m[1]), total: Number(m[2]) });
-  const pctRx = /(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?\s*(?:%|per ?cent\b)/gi;
-  while ((m = pctRx.exec(text)) !== null) add({ type: 'pct', raw: m[0], value: m[1] + (m[2] || '') });
-  if (/\b(live|shipped|deployed|in production)\b/i.test(text)) add({ type: 'live', raw: 'live' });
-  if (/\bci (?:is )?green\b|\bci passing\b|\btests? pass(?:ing|ed)?\b|\bgreen on [^.]*runner\b|\bbuild green\b/i.test(text)) add({ type: 'ci', raw: 'ci-green' });
-  if (/\bwitness[- ]clean\b|\bmutation[- ]clean\b|\bgate[- ]?clean\b|\bprovably\b|\bverified\b/i.test(text)) add({ type: 'clean', raw: 'verified' });
+  // The fifth walk: a date ("5/11/2026", "2026/11/05") is not a score, and a decimal score ("4.9/5") is read whole, so
+  // the report names the words as written (it named "9/5").
+  const scoreRx = /(?<![\w.]|\d\s*\/\s*)(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)(?!\w|\.\d|\s*\/\s*\d)/g;
+  while ((m = scoreRx.exec(rest)) !== null) add({ type: 'score', raw: m[0], killed: Number(m[1]), total: Number(m[2]) });
+  // (?<!\d): a number never starts inside a run of digits, so a long run is read once, not once per digit (it was quadratic).
+  const pctRx = /(?<!\d)(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?\s*(?:%|per ?cent\b)/gi;
+  while ((m = pctRx.exec(rest)) !== null) add({ type: 'pct', raw: m[0], value: m[1] + (m[2] || '') });
+  // The fifth walk: a multiplier ("3x faster", "10× faster") is a claim, backed like a percent; a resolution ("1920x1080"),
+  // hex ("0x1F") or a grid ("3×3") is not.
+  const multRx = /(?<![\w.,])(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?(?:x|\s?×)(?![\w×])/gi;
+  while ((m = multRx.exec(rest)) !== null) add({ type: 'mult', raw: m[0], value: m[1] + (m[2] || '') });
+  // The fifth walk: "launched", "released", "out now", "now available" are how a launch is announced, so they are live
+  // claims too ("Launched today!" shipped against a receipt that saw no 200). The claim names the word as written.
+  const live = /\b(?:live|shipped|deployed|in production|launched|released|rolled out|out now|now available|available now|generally available)\b/i.exec(rest);
+  if (live !== null) add({ type: 'live', raw: live[0] });
+  // The fifth walk: "CI passed", "all checks passed", "the build is passing", "tests are green" shipped against a failed CI,
+  // the page's own example of an overclaim. Each status claim now names its words as written, not a fixed token.
+  const ci = /\bci (?:is |was )?(?:green|passing|passed|passes|succeeded)\b|\b(?:checks?|tests?) (?:are |were |is |was )?(?:pass(?:ing|ed|es)?|green)\b|\bbuild (?:is |was )?(?:green|passing|passed|passes|succeeded)\b|\bgreen on [^.]{0,80}?runner\b/i.exec(rest);
+  if (ci !== null) add({ type: 'ci', raw: ci[0] });
+  const clean = /\bwitness[- ]clean\b|\bmutation[- ]clean\b|\bgate[- ]?clean\b|\bprovably\b|\bverified\b/i.exec(rest);
+  if (clean !== null) add({ type: 'clean', raw: clean[0] });
   return claims;
 }
 
@@ -150,8 +170,13 @@ function factMatches(receipt, rx) {
   const facts = Array.isArray(receipt.facts) ? receipt.facts : [];
   return facts.some((f) => isObj(f) && isStr(f.value) && rx.test(f.value));
 }
-const scoreFact = (killed, total) => new RegExp('(?:^|[^\\d.])' + killed + '\\s*/\\s*' + total + '(?!\\.?\\d)');
+// a score is matched as written ("4.9/5", "11/05"), never as part of a date ("5/11/2026") in the fact
+const scoreFact = (raw) => {
+  const [k, n] = raw.split('/').map((s) => s.trim().replace('.', '\\.'));
+  return new RegExp('(?:^|[^\\d.])(?<!\\d\\s*/\\s*)' + k + '\\s*/\\s*' + n + '(?!\\.?\\d|\\s*/\\s*\\d)');
+};
 const pctFact = (value) => new RegExp('(?:^|[^\\d.,])' + value.replace('.', '\\.') + '\\s*(?:%|per ?cent\\b)', 'i');
+const multFact = (value) => new RegExp('(?:^|[^\\d.,])' + value.replace('.', '\\.') + '(?:x|\\s?×)(?![\\w×])', 'i');
 function linkWhitelisted(receipt, value) {
   const facts = Array.isArray(receipt.facts) ? receipt.facts : [];
   return facts.some((f) => isObj(f) && f.key === 'link' && f.value === value);
@@ -179,10 +204,13 @@ export function checkClaims(text, receipt) {
       else why = 'claims verified or clean but the receipt witness is not clean';
     } else if (c.type === 'score') {
       if (isObj(receipt.witness) && receipt.witness.killed === c.killed && receipt.witness.total === c.total) { ok = true; why = 'the witness killed count'; }
-      else if (factMatches(receipt, scoreFact(c.killed, c.total))) { ok = true; why = 'a measured fact'; }
+      else if (factMatches(receipt, scoreFact(c.raw))) { ok = true; why = 'a measured fact'; }
       else why = 'claims a ' + c.raw + ' score the receipt does not back';
     } else if (c.type === 'pct') {
       if (factMatches(receipt, pctFact(c.value))) { ok = true; why = 'a measured fact'; }
+      else why = 'claims ' + c.raw + ' but no receipt fact backs it';
+    } else if (c.type === 'mult') {
+      if (factMatches(receipt, multFact(c.value))) { ok = true; why = 'a measured fact'; }
       else why = 'claims ' + c.raw + ' but no receipt fact backs it';
     }
     (ok ? backed : unbacked).push({ ...c, why });

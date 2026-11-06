@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-PxIbEJsRGWAFRefMNjf7w6SLUph83eArynRq3jV5aUE=' 'sha256-AhGWA36pMfnUd/MVdl24SOHT2XJ/5Rm2Gro3OzSU0E0=' 'sha256-2mhkfkz8DPUQY+3hMsshzhtcpmopCRMrbskWxhoqjzs=' 'sha256-g//r2fB5WY8HrtdEEg+2wNxVKt2VZ3j4gwUbgYjW5vs='; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-Zsh9vhzSe+Vaiv2Bx4mH7o0cJyXBplY/96/4BVIZVX0=' 'sha256-AhGWA36pMfnUd/MVdl24SOHT2XJ/5Rm2Gro3OzSU0E0=' 'sha256-2mhkfkz8DPUQY+3hMsshzhtcpmopCRMrbskWxhoqjzs=' 'sha256-g//r2fB5WY8HrtdEEg+2wNxVKt2VZ3j4gwUbgYjW5vs='; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
 <title>post-proof</title>
 <link rel="icon" href="data:,">
 <meta name="description" content="A checker for announcements: a release note, launch post or README ships only if the record of what was built backs every claim it makes. No AI judge.">
@@ -175,9 +175,10 @@
       <div class="card"><div class="big">0</div><div class="lab">models in the loop</div>
         <div class="sub">Each claim is checked against the receipt by a fixed rule. No AI grades another AI's marketing,
           so the same draft and the same receipt get the same answer every time.</div></div>
-      <div class="card"><div class="big"><span data-fact="claim.types">6</span></div><div class="lab">kinds of claim it checks</div>
-        <div class="sub">Links, "live", "CI green", "verified / clean", K/N scores and percentages: the claims a reader
-          takes as fact. A plain number ("seven layers") is left alone.</div></div>
+      <div class="card"><div class="big"><span data-fact="claim.types">7</span></div><div class="lab">kinds of claim it checks</div>
+        <div class="sub">Links, "live" (and "launched", "out now", "now available"), "CI green", "verified / clean", K/N
+          scores, percentages and multipliers ("3x faster"): the claims a reader takes as fact. A plain number ("seven
+          layers") or a date ("5/11/2026") is left alone.</div></div>
       <div class="card"><div class="big">3.7</div><div class="lab">the UK advertising rule</div>
         <div class="sub"><a href="https://www.asa.org.uk/type/non_broadcast/code_section/03.html">CAP Code rule 3.7</a>,
           enforced by the Advertising Standards Authority: hold documentary evidence for an objective claim <b>before</b> you publish it. The US FTC asks the same
@@ -234,7 +235,7 @@
       every push. The numbers in the diagram are read from its committed output by <code>make-page.mjs</code>, and CI
       fails if they drift.</p>
     <div class="dgwrap">
-      <svg class="dg" viewBox="0 0 400 862" role="img" aria-labelledby="dg-t dg-d">
+      <svg class="dg" viewBox="0 0 400 882" role="img" aria-labelledby="dg-t dg-d">
         <title id="dg-t">How post-proof gates a post</title>
         <desc id="dg-d">A draft goes in, its checkable claims are pulled out, each is checked against the matching field
           of the build-receipt, and the post is refused with each unbacked claim named, or shipped, sealed and logged.</desc>
@@ -247,12 +248,12 @@
         <text x="210" y="101" class="c">extractClaims()</text>
         <rect class="box" x="10" y="114" width="380" height="92" rx="10"/>
         <text x="24" y="138" class="t">2 · <tspan class="g" data-fact="refuse.checked">6</tspan> checkable claims pulled out</text>
-        <text x="24" y="160">links <tspan class="g" data-fact="refuse.url">2</tspan> · scores <tspan class="g" data-fact="refuse.score">1</tspan> · percents <tspan class="g" data-fact="refuse.pct">1</tspan></text>
+        <text x="24" y="160">links <tspan class="g" data-fact="refuse.url">2</tspan> · scores <tspan class="g" data-fact="refuse.score">1</tspan> · percents <tspan class="g" data-fact="refuse.pct">1</tspan> · multipliers <tspan class="g" data-fact="refuse.mult">0</tspan></text>
         <text x="24" y="180">live <tspan class="g" data-fact="refuse.live">1</tspan> · verified/clean <tspan class="g" data-fact="refuse.clean">1</tspan> · CI green <tspan class="g" data-fact="refuse.ci">0</tspan></text>
-        <text x="24" y="198" class="m">a plain number that is not a score or percent is left alone</text>
+        <text x="24" y="198" class="m">a plain number, a date, a link's own path: left alone</text>
         <line class="ar" x1="200" y1="206" x2="200" y2="238" marker-end="url(#ah)"/>
         <text x="210" y="227" class="c">checkClaims()</text>
-        <rect class="box" x="10" y="240" width="380" height="212" rx="10"/>
+        <rect class="box" x="10" y="240" width="380" height="232" rx="10"/>
         <text x="24" y="264" class="t">3 · Each claim against the receipt</text>
         <text x="24" y="288"><tspan class="g">link</tspan> → the live product URL, or a link fact</text>
         <text x="24" y="308"><tspan class="g">live</tspan> → live: true (a real 200 was seen)</text>
@@ -260,49 +261,53 @@
         <text x="24" y="348"><tspan class="g">verified / clean</tspan> → witness.clean: true</text>
         <text x="24" y="368"><tspan class="g">K/N score</tspan> → witness killed/total, or a fact</text>
         <text x="24" y="388"><tspan class="g">percent</tspan> → a fact stating the same percent</text>
-        <line class="rule" x1="24" y1="402" x2="376" y2="402"/>
-        <text x="24" y="422" class="m">this run's receipt: live <tspan data-fact="refuse.r.live">false</tspan> · ci <tspan data-fact="refuse.r.ci">failure</tspan></text>
-        <text x="24" y="440" class="m">witness <tspan data-fact="refuse.r.witness">41/50, not clean</tspan> · facts <tspan data-fact="refuse.r.facts">1</tspan></text>
-        <line class="ar" x1="200" y1="452" x2="200" y2="482" marker-end="url(#ah)"/>
-        <rect class="box" x="70" y="484" width="260" height="44" rx="22"/>
-        <text x="200" y="511" text-anchor="middle" class="t">4 · Is every claim backed?</text>
-        <line class="ar" x1="102" y1="528" x2="102" y2="566" marker-end="url(#ah)"/>
-        <text x="112" y="551" class="c">no</text>
-        <line class="ar" x1="297" y1="528" x2="297" y2="566" marker-end="url(#ah)"/>
-        <text x="307" y="551" class="c">yes</text>
-        <rect class="boxno" x="10" y="568" width="185" height="96" rx="10"/>
-        <text x="22" y="592" class="no"><tspan data-fact="refuse.verdict">REFUSE</tspan> · exit <tspan data-fact="refuse.exit">1</tspan></text>
-        <text x="22" y="614"><tspan class="g" data-fact="refuse.unbacked">6</tspan> unbacked, each</text>
-        <text x="22" y="632">named with its reason</text>
-        <text x="22" y="652" class="m">fix or cut them, run again</text>
-        <rect class="boxok" x="205" y="568" width="185" height="96" rx="10"/>
-        <text x="217" y="592" class="ok"><tspan data-fact="ship.verdict">SHIP</tspan> · exit <tspan data-fact="ship.exit">0</tspan></text>
-        <text x="217" y="614">ship.json: <tspan class="g" data-fact="ship.backed">5</tspan> of <tspan class="g" data-fact="ship.checked">5</tspan></text>
-        <text x="217" y="632">claims backed</text>
-        <text x="217" y="652" class="m">its honest twin</text>
-        <line class="ar" x1="297" y1="664" x2="297" y2="696" marker-end="url(#ah)"/>
-        <rect class="box" x="205" y="698" width="185" height="72" rx="10"/>
-        <text x="217" y="722" class="t">5 · Seal</text>
-        <text x="217" y="742">post + receipt SHA-256</text>
-        <text x="217" y="760" class="c">makePostReceipt()</text>
-        <line class="ar" x1="102" y1="664" x2="102" y2="798" marker-end="url(#ah)"/>
-        <line class="ar" x1="297" y1="770" x2="297" y2="798" marker-end="url(#ah)"/>
-        <rect class="box" x="10" y="800" width="380" height="52" rx="10"/>
-        <text x="24" y="823" class="t">6 · Ledger: every decision, shipped or refused</text>
-        <text x="24" y="842" class="c">appendPostLedger(): a SHA-256 hash chain</text>
+        <text x="24" y="408"><tspan class="g">multiplier</tspan> → a fact stating the same "3x"</text>
+        <line class="rule" x1="24" y1="422" x2="376" y2="422"/>
+        <text x="24" y="442" class="m">this run's receipt: live <tspan data-fact="refuse.r.live">false</tspan> · ci <tspan data-fact="refuse.r.ci">failure</tspan></text>
+        <text x="24" y="460" class="m">witness <tspan data-fact="refuse.r.witness">41/50, not clean</tspan> · facts <tspan data-fact="refuse.r.facts">1</tspan></text>
+        <line class="ar" x1="200" y1="472" x2="200" y2="502" marker-end="url(#ah)"/>
+        <rect class="box" x="70" y="504" width="260" height="44" rx="22"/>
+        <text x="200" y="531" text-anchor="middle" class="t">4 · Is every claim backed?</text>
+        <line class="ar" x1="102" y1="548" x2="102" y2="586" marker-end="url(#ah)"/>
+        <text x="112" y="571" class="c">no</text>
+        <line class="ar" x1="297" y1="548" x2="297" y2="586" marker-end="url(#ah)"/>
+        <text x="307" y="571" class="c">yes</text>
+        <rect class="boxno" x="10" y="588" width="185" height="96" rx="10"/>
+        <text x="22" y="612" class="no"><tspan data-fact="refuse.verdict">REFUSE</tspan> · exit <tspan data-fact="refuse.exit">1</tspan></text>
+        <text x="22" y="634"><tspan class="g" data-fact="refuse.unbacked">6</tspan> unbacked, each</text>
+        <text x="22" y="652">named with its reason</text>
+        <text x="22" y="672" class="m">fix or cut them, run again</text>
+        <rect class="boxok" x="205" y="588" width="185" height="96" rx="10"/>
+        <text x="217" y="612" class="ok"><tspan data-fact="ship.verdict">SHIP</tspan> · exit <tspan data-fact="ship.exit">0</tspan></text>
+        <text x="217" y="634">ship.json: <tspan class="g" data-fact="ship.backed">5</tspan> of <tspan class="g" data-fact="ship.checked">5</tspan></text>
+        <text x="217" y="652">claims backed</text>
+        <text x="217" y="672" class="m">its honest twin</text>
+        <line class="ar" x1="297" y1="684" x2="297" y2="716" marker-end="url(#ah)"/>
+        <rect class="box" x="205" y="718" width="185" height="72" rx="10"/>
+        <text x="217" y="742" class="t">5 · Seal</text>
+        <text x="217" y="762">post + receipt SHA-256</text>
+        <text x="217" y="780" class="c">makePostReceipt()</text>
+        <line class="ar" x1="102" y1="684" x2="102" y2="818" marker-end="url(#ah)"/>
+        <line class="ar" x1="297" y1="790" x2="297" y2="818" marker-end="url(#ah)"/>
+        <rect class="box" x="10" y="820" width="380" height="52" rx="10"/>
+        <text x="24" y="843" class="t">6 · Ledger: every decision, shipped or refused</text>
+        <text x="24" y="862" class="c">appendPostLedger(): a SHA-256 hash chain</text>
       </svg>
     </div>
     <h3>Step by step</h3>
     <ol class="steps">
       <li><b>The draft goes in.</b> A plain text, or a hook, a reveal and a call to action, which <code>postText()</code> joins.</li>
-      <li><b>The checkable claims come out.</b> <code>extractClaims()</code> finds links, K/N scores and percentages of any length (a percent written "30%",
-        "30 percent" or "30 per cent"), and the words
-        "live / shipped / deployed / in production", "CI green / tests pass", "verified / witness-clean". Anything else is prose,
-        and prose is not judged.</li>
+      <li><b>The checkable claims come out.</b> <code>extractClaims()</code> finds links, K/N scores ("41/43", "4.9/5") and
+        percentages of any length (a percent written "30%", "30 percent" or "30 per cent"), multipliers ("3x", "10×"), and the words
+        "live / shipped / deployed / in production / launched / released / rolled out / out now / now available / generally
+        available", "CI green / CI passed / all checks passed / the build is passing / tests are green", "verified /
+        witness-clean". Each claim is named as written. A link is one claim: nothing inside it is read as another. A date
+        ("5/11/2026") is not a score. Anything else is prose, and prose is not judged.</li>
       <li><b>Each claim is matched to the field that can prove it.</b> <code>checkClaims()</code> backs a link only if it is the
         live product URL (and a 200 was seen) or a whitelisted link; "live" only if a 200 was seen; "CI green" only if CI
         concluded success; "verified" only if the mutation test was clean; a score only at the exact killed/total, or a fact
-        stating the same K/N; a percent only if a measured fact states the same number as a percent.</li>
+        stating the same K/N; a percent only if a measured fact states the same number as a percent; a multiplier only if a
+        measured fact states the same multiplier.</li>
       <li><b>One unbacked claim refuses the post.</b> <code>gatePost()</code> answers SHIP only when every checkable claim is
         backed, and names each unbacked one with its reason, so the writer (or the agent) fixes exactly those words.</li>
       <li><b>A shipped post is sealed.</b> <code>makePostReceipt()</code> binds the post's SHA-256 to the receipt's SHA-256 and
@@ -332,14 +337,17 @@
 <li class="yes"><span class="mk">✓</span> <span class="tag">url</span> <b>https://example.org/csv-checker.</b> — the live product url</li>
 <li class="yes"><span class="mk">✓</span> <span class="tag">score</span> <b>41/43</b> — the witness killed count</li>
 <li class="yes"><span class="mk">✓</span> <span class="tag">live</span> <b>live</b> — the receipt observed a 200</li>
-<li class="yes"><span class="mk">✓</span> <span class="tag">ci</span> <b>ci-green</b> — ci concluded success</li>
-<li class="yes"><span class="mk">✓</span> <span class="tag">clean</span> <b>verified</b> — the witness is clean</li>
+<li class="yes"><span class="mk">✓</span> <span class="tag">ci</span> <b>CI green</b> — ci concluded success</li>
+<li class="yes"><span class="mk">✓</span> <span class="tag">clean</span> <b>witness-clean</b> — the witness is clean</li>
 </ul>
 </div>
 <!-- ⟦TRACE-END⟧ -->
     <p class="mut">A report quotes each claim as written, punctuation included. Before a link is compared, a full stop,
-      comma, colon or semicolon at its end is dropped: that is why <code>https://example.org/csv-checker.</code>, at the end
-      of a sentence, is backed by a receipt URL without the full stop.</p>
+      comma, colon, semicolon, "!", "?", "…" or closing quote at its end is dropped: that is why
+      <code>https://example.org/csv-checker.</code>, at the end of a sentence, is backed by a receipt URL without the full
+      stop. A link ends at <code>&lt;</code>, <code>&gt;</code>, a double quote or a backtick, which cannot stand in a link
+      unencoded, so a link in Markdown (<code>&lt;https://…&gt;</code>, <code>[text](https://…)</code>) or an HTML
+      <code>href</code> is read as the link itself.</p>
   </section>
 
   <section id="blueprint">
@@ -350,11 +358,11 @@
     <div class="cards two">
       <div class="organ"><div class="f">kernel.mjs</div>
         <div class="d">The rules: pulling claims out, checking each against the receipt, the seal, the ledger, SHA-256. Pure: it
-          never fetches, never writes, and garbage in gives a reason, never a crash. <span data-fact="lines.kernel">265</span> lines.</div>
-        <div class="p"><span data-fact="tests.kernel">44</span> tests · witness <span data-fact="w.tag">v0.6</span> caught
-          <span data-fact="w.k.killed">90</span> of <span data-fact="w.k.total">92</span> mutants, <span data-fact="w.k.ignored">2</span>
+          never fetches, never writes, and garbage in gives a reason, never a crash. <span data-fact="lines.kernel">293</span> lines.</div>
+        <div class="p"><span data-fact="tests.kernel">54</span> tests · witness <span data-fact="w.tag">v0.6</span> caught
+          <span data-fact="w.k.killed">96</span> of <span data-fact="w.k.total">98</span> mutants, <span data-fact="w.k.ignored">2</span>
           reviewed-equivalent with a written reason each, <span data-fact="w.k.survived">0</span> survivors · sha256
-          <span data-fact="w.k.sha">22763d1fae04</span>…</div></div>
+          <span data-fact="w.k.sha">fb5ec786e486</span>…</div></div>
       <div class="organ"><div class="f">costcase.mjs</div>
         <div class="d">The cost case on this page: your figures plus the sourced basis, floors not top ends, like for like.
           Pure and total. <span data-fact="lines.costcase">92</span> lines.</div>
@@ -473,7 +481,8 @@
         and the probes saw. You already produce the receipt: the HTTP check, the CI result, the test score. One step uses it.</div></div>
       <div class="card"><div class="lab">Compliance and legal</div><div class="sub">For every claim it checks, the evidence is
         held before publication (CAP Code 3.7; the FTC's reasonable-basis rule). Shipped posts are sealed to their receipt;
-        every decision can be hash-chained on the ledger. It does not judge tone, comparisons or free prose: keep your human review for those.</div></div>
+        every decision can be hash-chained on the ledger. It does not judge tone, comparisons, free prose or certification and
+        compliance claims ("SOC 2 certified"): keep your human review for those.</div></div>
       <div class="card"><div class="lab">The people who review posts today</div><div class="sub">They stop cross-checking links,
         statuses and scores by hand and keep the judgement calls: is it clear, is it fair, is it kind. Nobody's job is to be the
         last line against a typo in a score any more.</div></div>
@@ -536,14 +545,21 @@
       <li><b>It does not fetch.</b> Whoever builds the receipt must probe for real (the 200, the CI result, the test run). A
         false receipt gets a false pass: the gate proves the post matches the receipt, not that the receipt is true. Build the
         receipt from your CI's own probes, never by hand.</li>
-      <li><b>It checks the checkable only.</b> "Fastest on the market" is not a link, score, percent, live, CI or verified
-        claim, so it is not caught. That is a stated limit, not a hidden one.</li>
-      <li><b>It catches rounding-up, not a determined evader.</b> A score or percent of any length is read ("1000%",
-        "12345/12345", "70 percent"), but numbers written as words ("fifty out of fifty", "a hundred percent") are not parsed. It guards against an agent or a busy person overclaiming by habit; pair it with a human
-        read for anything adversarial.</li>
-      <li><b>Numbers are matched as written, as whole numbers.</b> A percent or a K/N score is backed only when a receipt fact
-        states the same number: "3%" is not backed by a fact saying "30%", nor "1/4" by "11/40", and a percent needs a fact
-        written as a percent ("30%", "30 percent"). It does not convert units or round; write facts as measured.</li>
+      <li><b>It checks the checkable only.</b> "Fastest on the market", "SOC 2 certified", "GDPR compliant" and
+        "independently audited" are not links, scores, percents, multipliers, live, CI or verified claims; no build probe can
+        prove them, so the gate does not read them. Keep your legal and compliance review for those. That is a stated limit,
+        not a hidden one.</li>
+      <li><b>It catches rounding-up, not a determined evader.</b> A score, percent or multiplier of any length is read ("1000%",
+        "12345/12345", "70 percent", "3x", "10×"), but numbers written as words ("fifty out of fifty", "a hundred percent",
+        "twice as fast", "tenfold") and a multiplier with a spaced letter x ("3 x faster") are not. It guards against an agent
+        or a busy person overclaiming by habit; pair it with a human read for anything adversarial.</li>
+      <li><b>Numbers are matched as written, as whole numbers.</b> A percent, a K/N score or a multiplier is backed only when a
+        receipt fact states the same number: "3%" is not backed by a fact saying "30%", nor "1/4" by "11/40", nor "3x" by
+        "13x" or "3.5x", and a percent needs a fact written as a percent ("30%", "30 percent"). It does not convert units or
+        round; write facts as measured.</li>
+      <li><b>Some ordinary text reads as a score.</b> A date with its year ("5/11/2026") is left alone, but a date without one
+        ("11/05") and "24/7" look exactly like K/N scores, so they are refused until a fact states them. Write dates with the
+        year or the month's name, and back "24/7" with a fact (your support rota).</li>
       <li><b>Tamper-evident, not signed, by design.</b> The seals and the ledger hash-verify, so any change is detectable; they
         do not prove who sealed them. Proving that needs a key, and this tool is built to need none (no account, no key,
         nothing to hold). If you must prove who published, sign the sealed post-receipt with the release-signing key you
@@ -618,8 +634,8 @@
   <section id="questions">
     <h2>Questions buyers asked</h2>
     <p class="lede">Before calling this page finished, four buyer personas (a CFO, a CTO / CISO, a COO and a procurement lead)
-      read it cold four times: a first pass on a local open model, a second adversarial read against the code, then twice
-      on the served page, trying the gate as a buyer would. They listed every question it left open. These are the
+      read it cold five times: a first pass on a local open model, a second adversarial read against the code, then three
+      times on the served page, trying the gate as a buyer would. They listed every question it left open. These are the
       questions and the straight answers. The gaps they found were fixed, not explained away: unexplained jargon, a figure
       shown without its value, a wrong statement of where the gate sits in our own pipeline, security sentences that
       said more than the code does, a cost case that left out the hours to set it up, and two real faults in the gate itself.
@@ -627,10 +643,17 @@
       the same whole number. Second, a percent of four or more digits, or one written "70 percent", was not read at all, so
       "1000% faster" shipped unchecked; every score and percent is now read whatever its length, and a percent in words
       too. Each fault has tests for every edge. The fourth read also made the page's "sends nothing" a rule your browser
-      enforces (its Content-Security-Policy), not only a promise. The records are in the repository:
+      enforces (its Content-Security-Policy), not only a promise. The fifth drove the gate with release notes written the
+      way people write them, and found more: a date ("Released on 5/11/2026") was refused as a score; a rating of "4.9/5"
+      was named "9/5"; "Launched today!", "Out now", "CI passed" and "All checks passed" shipped against a receipt that saw
+      no 200 or a failed CI; "3x faster" was not read; a link in Markdown or HTML (<code>&lt;https://…&gt;</code>, an
+      <code>href</code>) was refused; and 100,000 digits in a row took 44 seconds to read on our test machine. Each is
+      fixed, with tests that fail on the old gate; certification claims ("SOC 2 certified") are now named as a limit.
+      The records are in the repository:
       <a href="https://github.com/sjgant80-hub/post-proof/blob/master/walks/2026-11-04-buyer-walk.json">the first two walks</a>,
-      <a href="https://github.com/sjgant80-hub/post-proof/blob/master/walks/2026-11-05-served-walk.json">the third</a>
-      and <a href="https://github.com/sjgant80-hub/post-proof/blob/master/walks/2026-11-05-fourth-walk.json">the fourth</a>.</p>
+      <a href="https://github.com/sjgant80-hub/post-proof/blob/master/walks/2026-11-05-served-walk.json">the third</a>,
+      <a href="https://github.com/sjgant80-hub/post-proof/blob/master/walks/2026-11-05-fourth-walk.json">the fourth</a>
+      and <a href="https://github.com/sjgant80-hub/post-proof/blob/master/walks/2026-11-05-fifth-walk.json">the fifth</a>.</p>
     <h3>CFO</h3>
     <ul class="plain">
       <li><b>What does it cost us to use?</b> The software is MIT-licensed: the source carries no licence fee, no seats and no
@@ -663,6 +686,9 @@
       <li><b>What if someone fakes the receipt?</b> The gate cannot tell; it proves the post matches the receipt. Build the
         receipt inside CI from CI's own probes, so nobody types it. The seal binds the post to the receipt's hash, so swapping
         the receipt afterwards is detectable.</li>
+      <li><b>Will it stop an agent writing "SOC 2 certified" or "GDPR compliant"?</b> No. A certificate or a compliance status
+        is not something a build probe observes, so the gate does not read those words, and they pass it unchecked. Keep
+        them for your compliance team's sign-off.</li>
       <li><b>Who tests the tester?</b> The mutation test (witness) is public, pinned at a tagged version, cloned fresh on every
         CI run, and checked byte for byte against the copy in the repository.</li>
       <li><b>Where does the ledger live, and who can change it?</b> It is a plain JSON array your own publishing script keeps,
@@ -676,15 +702,17 @@
       <li><b>What happens when a true post is refused?</b> The refusal names the claim and why. Usually the evidence exists but
         is not in the receipt: add it as a fact (a measured figure, or a <code>link</code> fact for an outbound link) and run
         again. There is no override switch in the gate; publishing anyway is a person's decision, made outside it, and the
-        refusal stays on record (in CI's log, and on the ledger if you keep one).</li>
-      <li><b>Does it work in other languages?</b> Links, K/N scores and percentages are checked in any language. The status words
-        ("live", "CI green", "verified") are matched in English only, so in another language those claims go unchecked.</li>
+        refusal stays on record (in CI's log, and on the ledger if you keep one). Two you will meet: "24/7" and a date with no
+        year ("11/05") read as K/N scores; back "24/7" with a fact, and write the date with its year ("5/11/2026").</li>
+      <li><b>Does it work in other languages?</b> Links, K/N scores, percentages written with "%" and multipliers are checked in
+        any language. The status words ("live", "launched", "CI green", "verified") and "percent" are matched in English only,
+        so in another language those claims go unchecked.</li>
       <li><b>How exactly do we add a fact?</b> A fact is a pair in the receipt's <code>facts</code> list: a key, and the
         measured statement as you would quote it, for example <code>{"key": "review-time", "value": "cut review time 30% on one
-        team"}</code>. A percent or a K/N score in the draft is backed when a fact's value states the same number as a whole
-        number, so "review time down 30%" passes against that fact, and "down 70%" and "down 3%" do not. Write a percent in a
-        fact as a percent ("30%" or "30 percent"), and a score as K/N ("41/43"). An outbound link is whitelisted with a fact keyed <code>link</code>
-        whose value is the exact URL.</li>
+        team"}</code>. A percent, a K/N score or a multiplier in the draft is backed when a fact's value states the same number
+        as a whole number, so "review time down 30%" passes against that fact, and "down 70%" and "down 3%" do not. Write a
+        percent in a fact as a percent ("30%" or "30 percent"), a score as K/N ("41/43", "4.9/5"), and a multiplier as written
+        ("ran 3x faster on job A"). An outbound link is whitelisted with a fact keyed <code>link</code> whose value is the exact URL.</li>
       <li><b>Does it fit our build system?</b> Any build system works: the receipt is five fields (<code>url</code>,
         <code>live</code>, <code>ci</code>, <code>witness</code>, <code>facts</code>) you fill from whatever your pipeline
         already measures. A malformed receipt is refused with the reason, never guessed at.</li>
@@ -720,7 +748,7 @@
       agents write more release notes, changelogs and launch posts, the volume outruns any human check.</p>
     <h3>The method</h3>
     <p>Split a draft into two parts: the claims a receipt could prove (links, live status, CI status, verified/clean, K/N
-      scores, percentages) and everything else. Take a build-receipt produced by real probes: did the URL return 200, what
+      scores, percentages, multipliers) and everything else. Take a build-receipt produced by real probes: did the URL return 200, what
       did CI conclude, what did the mutation test score, which facts were measured. Back each checkable claim only by the
       field that can prove it, and refuse the post if one is not backed, naming the words. Seal a passed post to its receipt
       with two hashes, and log every decision on a hash chain.</p>
@@ -729,9 +757,9 @@
       false confidence this gate exists to refuse. A rule gives the same answer every time, can be read in full, and can be
       tested to destruction. The gate's whole job is to be boring and certain about a narrow thing.</p>
     <h3>The evidence</h3>
-    <p>The kernel has <span data-fact="tests.kernel">44</span> tests. The witness mutation test (<span data-fact="w.tag">v0.6</span>)
-      made <span data-fact="w.k.total">92</span> single-operator changes to it and the tests caught
-      <span data-fact="w.k.killed">90</span>; the other <span data-fact="w.k.ignored">2</span> were reviewed as unable to change any
+    <p>The kernel has <span data-fact="tests.kernel">54</span> tests. The witness mutation test (<span data-fact="w.tag">v0.6</span>)
+      made <span data-fact="w.k.total">98</span> single-operator changes to it and the tests caught
+      <span data-fact="w.k.killed">96</span>; the other <span data-fact="w.k.ignored">2</span> were reviewed as unable to change any
       output and are recorded with a written reason each; <span data-fact="w.k.survived">0</span> survived. The cost-case kernel:
       <span data-fact="tests.costcase">14</span> tests, <span data-fact="w.c.killed">28</span> of <span data-fact="w.c.total">28</span>
       changes caught. The shipped script reproduces the committed example reports byte for byte. All of it re-runs on
@@ -777,7 +805,7 @@
 // no receipt, no post.
 
 const CI_STATES = Object.freeze(['success', 'failure', null]);
-const CLAIM_TYPES = Object.freeze(['url', 'live', 'ci', 'clean', 'score', 'pct']);
+const CLAIM_TYPES = Object.freeze(['url', 'live', 'ci', 'clean', 'score', 'pct', 'mult']);
 
 const isStr = (v) => typeof v === 'string';
 const isBool = (v) => typeof v === 'boolean';
@@ -894,17 +922,37 @@ function extractClaims(text) {
   const seen = new Set();
   const add = (c) => { const k = c.type + '|' + c.raw; if (!seen.has(k)) { seen.add(k); claims.push(c); } };
   let m;
-  const urlRx = /https?:\/\/[^\s)\]]+/g;
-  while ((m = urlRx.exec(text)) !== null) add({ type: 'url', raw: m[0], value: m[0].replace(/[.,;:]+$/, '') });
+  // The fifth walk: < > " and ` cannot stand in a link unencoded (RFC 3986), so they end one ("<https://…>", an HTML href,
+  // a quoted or `code` link were refused, the report naming the link with its bracket or quote); and a ! ? … or a closing
+  // quote at the end is the sentence's, like the full stop.
+  const urlRx = /https?:\/\/[^\s)\]<>"`]+/g;
+  while ((m = urlRx.exec(text)) !== null) add({ type: 'url', raw: m[0], value: m[0].replace(/[.,;:!?'…]+$/, '') });
+  // 2026-11-05 (the fifth buyer walk): a link is one claim, so the rest is read with every link blanked out ("reg/2024/1689"
+  // inside a link was read as a score, "/deployed" as a live claim).
+  const rest = text.replace(urlRx, ' ');
   // 2026-11-05 (the fourth buyer walk): a score or percent of any length is a claim ("1000% faster" used to pass
   // unread, as did "12345/12345"), and so is a percent written "30 percent" or "30 per cent", the way a fact may state it.
-  const scoreRx = /\b(\d+)\s*\/\s*(\d+)\b/g;
-  while ((m = scoreRx.exec(text)) !== null) add({ type: 'score', raw: m[0], killed: Number(m[1]), total: Number(m[2]) });
-  const pctRx = /(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?\s*(?:%|per ?cent\b)/gi;
-  while ((m = pctRx.exec(text)) !== null) add({ type: 'pct', raw: m[0], value: m[1] + (m[2] || '') });
-  if (/\b(live|shipped|deployed|in production)\b/i.test(text)) add({ type: 'live', raw: 'live' });
-  if (/\bci (?:is )?green\b|\bci passing\b|\btests? pass(?:ing|ed)?\b|\bgreen on [^.]*runner\b|\bbuild green\b/i.test(text)) add({ type: 'ci', raw: 'ci-green' });
-  if (/\bwitness[- ]clean\b|\bmutation[- ]clean\b|\bgate[- ]?clean\b|\bprovably\b|\bverified\b/i.test(text)) add({ type: 'clean', raw: 'verified' });
+  // The fifth walk: a date ("5/11/2026", "2026/11/05") is not a score, and a decimal score ("4.9/5") is read whole, so
+  // the report names the words as written (it named "9/5").
+  const scoreRx = /(?<![\w.]|\d\s*\/\s*)(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)(?!\w|\.\d|\s*\/\s*\d)/g;
+  while ((m = scoreRx.exec(rest)) !== null) add({ type: 'score', raw: m[0], killed: Number(m[1]), total: Number(m[2]) });
+  // (?<!\d): a number never starts inside a run of digits, so a long run is read once, not once per digit (it was quadratic).
+  const pctRx = /(?<!\d)(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?\s*(?:%|per ?cent\b)/gi;
+  while ((m = pctRx.exec(rest)) !== null) add({ type: 'pct', raw: m[0], value: m[1] + (m[2] || '') });
+  // The fifth walk: a multiplier ("3x faster", "10× faster") is a claim, backed like a percent; a resolution ("1920x1080"),
+  // hex ("0x1F") or a grid ("3×3") is not.
+  const multRx = /(?<![\w.,])(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?(?:x|\s?×)(?![\w×])/gi;
+  while ((m = multRx.exec(rest)) !== null) add({ type: 'mult', raw: m[0], value: m[1] + (m[2] || '') });
+  // The fifth walk: "launched", "released", "out now", "now available" are how a launch is announced, so they are live
+  // claims too ("Launched today!" shipped against a receipt that saw no 200). The claim names the word as written.
+  const live = /\b(?:live|shipped|deployed|in production|launched|released|rolled out|out now|now available|available now|generally available)\b/i.exec(rest);
+  if (live !== null) add({ type: 'live', raw: live[0] });
+  // The fifth walk: "CI passed", "all checks passed", "the build is passing", "tests are green" shipped against a failed CI,
+  // the page's own example of an overclaim. Each status claim now names its words as written, not a fixed token.
+  const ci = /\bci (?:is |was )?(?:green|passing|passed|passes|succeeded)\b|\b(?:checks?|tests?) (?:are |were |is |was )?(?:pass(?:ing|ed|es)?|green)\b|\bbuild (?:is |was )?(?:green|passing|passed|passes|succeeded)\b|\bgreen on [^.]{0,80}?runner\b/i.exec(rest);
+  if (ci !== null) add({ type: 'ci', raw: ci[0] });
+  const clean = /\bwitness[- ]clean\b|\bmutation[- ]clean\b|\bgate[- ]?clean\b|\bprovably\b|\bverified\b/i.exec(rest);
+  if (clean !== null) add({ type: 'clean', raw: clean[0] });
   return claims;
 }
 
@@ -916,8 +964,13 @@ function factMatches(receipt, rx) {
   const facts = Array.isArray(receipt.facts) ? receipt.facts : [];
   return facts.some((f) => isObj(f) && isStr(f.value) && rx.test(f.value));
 }
-const scoreFact = (killed, total) => new RegExp('(?:^|[^\\d.])' + killed + '\\s*/\\s*' + total + '(?!\\.?\\d)');
+// a score is matched as written ("4.9/5", "11/05"), never as part of a date ("5/11/2026") in the fact
+const scoreFact = (raw) => {
+  const [k, n] = raw.split('/').map((s) => s.trim().replace('.', '\\.'));
+  return new RegExp('(?:^|[^\\d.])(?<!\\d\\s*/\\s*)' + k + '\\s*/\\s*' + n + '(?!\\.?\\d|\\s*/\\s*\\d)');
+};
 const pctFact = (value) => new RegExp('(?:^|[^\\d.,])' + value.replace('.', '\\.') + '\\s*(?:%|per ?cent\\b)', 'i');
+const multFact = (value) => new RegExp('(?:^|[^\\d.,])' + value.replace('.', '\\.') + '(?:x|\\s?×)(?![\\w×])', 'i');
 function linkWhitelisted(receipt, value) {
   const facts = Array.isArray(receipt.facts) ? receipt.facts : [];
   return facts.some((f) => isObj(f) && f.key === 'link' && f.value === value);
@@ -945,10 +998,13 @@ function checkClaims(text, receipt) {
       else why = 'claims verified or clean but the receipt witness is not clean';
     } else if (c.type === 'score') {
       if (isObj(receipt.witness) && receipt.witness.killed === c.killed && receipt.witness.total === c.total) { ok = true; why = 'the witness killed count'; }
-      else if (factMatches(receipt, scoreFact(c.killed, c.total))) { ok = true; why = 'a measured fact'; }
+      else if (factMatches(receipt, scoreFact(c.raw))) { ok = true; why = 'a measured fact'; }
       else why = 'claims a ' + c.raw + ' score the receipt does not back';
     } else if (c.type === 'pct') {
       if (factMatches(receipt, pctFact(c.value))) { ok = true; why = 'a measured fact'; }
+      else why = 'claims ' + c.raw + ' but no receipt fact backs it';
+    } else if (c.type === 'mult') {
+      if (factMatches(receipt, multFact(c.value))) { ok = true; why = 'a measured fact'; }
       else why = 'claims ' + c.raw + ' but no receipt fact backs it';
     }
     (ok ? backed : unbacked).push({ ...c, why });

@@ -40,7 +40,7 @@ test('sha256 + canon are the proven pair (known vector, stable order)', () => {
 
 test('CI_STATES + CLAIM_TYPES are the frozen vocabularies', () => {
   assert.deepEqual([...CI_STATES], ['success', 'failure', null]);
-  assert.deepEqual([...CLAIM_TYPES], ['url', 'live', 'ci', 'clean', 'score', 'pct']);
+  assert.deepEqual([...CLAIM_TYPES], ['url', 'live', 'ci', 'clean', 'score', 'pct', 'mult']);
   assert.throws(() => { CI_STATES.push('pending'); });
 });
 
@@ -231,6 +231,144 @@ test('checkClaims: a long or worded percent and a long score are checked like an
   assert.equal(backs('scored 12345/12345', 'scored 41/43 runs'), false);
 });
 
+// 2026-11-05, the fifth buyer walk (the served page of dfe386e, the gate driven with drafts it had not been shown):
+// "Released on 5/11/2026." was refused as an unbacked score "5/11"; "Rated 4.9/5" was reported as the claim "9/5", words
+// nobody wrote, and no fact could back it; "3x faster" (in the page's own hyped draft) and "10× faster" were not read at
+// all; "Launched today!", "Out now" and "Now generally available" shipped against a receipt that saw no 200; and a link's
+// own path was read as other claims ("reg/2024/1689" in a link was a score, backed only because the link fact held it).
+const types = (text) => extractClaims(text).map((c) => c.type);
+const scores = (text) => extractClaims(text).filter((c) => c.type === 'score').map((c) => [c.raw, c.killed, c.total]);
+const mults = (text) => extractClaims(text).filter((c) => c.type === 'mult').map((c) => [c.raw, c.value]);
+const liveWord = (text) => (extractClaims(text).find((c) => c.type === 'live') || {}).raw;
+
+test('extractClaims: a link is one claim, and nothing inside it is read as another', () => {
+  assert.deepEqual(types('see https://eur-lex.europa.eu/eli/reg/2024/1689/oj'), ['url']);
+  assert.deepEqual(types('docs: https://x.io/live/verified/41/43/30%25/3x'), ['url']);
+  assert.deepEqual(types('docs: https://x.io/a/1/2 and https://x.io/deployed'), ['url', 'url']);
+  assert.deepEqual(types('it is live at https://x.io/p, 41/43').sort(), ['live', 'score', 'url']);   // the text round a link is still read
+  assert.equal(checkClaims('see https://eur-lex.europa.eu/eli/reg/2024/1689/oj', RECEIPT).checked, 1);
+});
+
+test('extractClaims: a link in Markdown, HTML or quotes is read without its brackets, quotes or end punctuation', () => {
+  const links = (text) => extractClaims(text).filter((c) => c.type === 'url').map((c) => c.value);
+  const APP = 'https://example.org/app';
+  for (const text of ['See <https://example.org/app>.', '<a href="https://example.org/app">app</a>', 'See "https://example.org/app".',
+    "See 'https://example.org/app'.", 'See https://example.org/app!', 'See https://example.org/app?', 'See https://example.org/app…',
+    'run `https://example.org/app`', 'See [the app](https://example.org/app).', 'https://example.org/app,']) {
+    assert.deepEqual(links(text), [APP], text);
+    assert.equal(checkClaims(text, { url: APP, live: true, ci: null, witness: null, facts: [] }).ok, true, text);
+  }
+  assert.deepEqual(links('see https://example.org/a?b=1&c=2'), ['https://example.org/a?b=1&c=2']);   // a query is kept
+  assert.deepEqual(links("see https://example.org/o'brien/x"), ["https://example.org/o'brien/x"]);   // a quote inside is kept
+});
+
+test('extractClaims: a date is not a score', () => {
+  assert.deepEqual(scores('Released on 5/11/2026.'), []);
+  assert.deepEqual(scores('build of 2026/11/05'), []);
+  assert.deepEqual(scores('on 5 / 11 / 2026'), []);
+  assert.deepEqual(scores('scored 41/43 in the 5/11/2026 run'), [['41/43', 41, 43]]);
+  assert.equal(checkClaims('Released on 5/11/2026.', withFacts()).ok, true);
+});
+
+test('extractClaims: a decimal score is read whole, so a report names the words as written', () => {
+  assert.deepEqual(scores('Rated 4.9/5 by users'), [['4.9/5', 4.9, 5]]);
+  assert.deepEqual(scores('it scored 41/43.5'), [['41/43.5', 41, 43.5]]);
+  assert.deepEqual(scores('v2.1/4 runs'), []);                                            // a version, not a score
+  assert.deepEqual(scores('it scored 41/43.'), [['41/43', 41, 43]]);                       // a full stop is not a decimal
+  assert.deepEqual(scores('a1/2 b'), []);
+  assert.deepEqual(scores('it scored 41/43a'), []);
+});
+
+test('checkClaims: a decimal or written-as-is score is backed only by a fact stating it', () => {
+  assert.equal(backs('Rated 4.9/5 by users', 'rated 4.9/5 by 212 reviewers'), true);
+  assert.equal(backs('Rated 4.9/5', 'rated 9/5'), false);
+  assert.equal(backs('Rated 4.9/5', 'rated 14.9/5'), false);                              // a longer number
+  assert.equal(backs('Rated 4.9/5', 'rated 4.9/50'), false);                              // the total runs on
+  assert.equal(backs('Rated 4.9/5', 'rated 4x9/5'), false);                               // the dot is literal
+  assert.equal(backs('Rated 4.9/5', 'rated 4.9 / 5'), true);                              // spaces round the slash
+  assert.equal(backs('scored 5/11', 'ran on 5/11/2026'), false);                          // a date in a fact is not a score
+  assert.equal(backs('scored 11/5', 'ran on 2026/11/5'), false);
+  assert.equal(backs('scored 11/5', 'ran on 2026/ 11/5'), false);
+  assert.equal(backs('scored 11/05', 'scored 11/05 tasks'), true);                        // as written
+  assert.match(checkClaims('Rated 4.9/5', withFacts()).unbacked[0].why, /claims a 4\.9\/5 score/);
+  assert.equal(checkClaims('scored 130/133', { ...RECEIPT, facts: [] }).ok, true);          // the witness still backs a whole score
+  assert.equal(checkClaims('scored 4.9/5', { ...RECEIPT, witness: { clean: true, killed: 4, total: 5 }, facts: [] }).ok, false);
+});
+
+test('extractClaims: a multiplier ("3x", "10×") is a claim', () => {
+  assert.deepEqual(mults('It is 3x faster'), [['3x', '3']]);
+  assert.deepEqual(mults('Now 10× faster.'), [['10×', '10']]);
+  assert.deepEqual(mults('Now 10 × faster'), [['10 ×', '10']]);
+  assert.deepEqual(mults('2.5X the throughput'), [['2.5X', '2.5']]);
+  assert.deepEqual(mults('up 1,000x'), [['1,000x', '1,000']]);
+  assert.deepEqual(mults('0.5x the cost, 3x.'), [['0.5x', '0.5'], ['3x', '3']]);
+  assert.deepEqual(mults('runs on 1920x1080 screens'), []);                               // a resolution
+  assert.deepEqual(mults('the 0x1F flag'), []);                                           // hex
+  assert.deepEqual(mults('a 2x2 grid, a 3×3 grid'), []);
+  assert.deepEqual(mults('v3x, 3xl'), []);
+  assert.deepEqual(mults('3 x faster'), []);                                              // a spaced letter x is not read
+  assert.deepEqual(mults('twice as fast, tenfold'), []);                                  // words are not read
+  assert.equal(checkClaims('It is 3x faster', withFacts()).checked, 1);
+});
+
+test('checkClaims: a multiplier is backed only by a fact stating the same multiplier', () => {
+  assert.equal(backs('It is 3x faster', 'job A ran 3x faster on the benchmark'), true);
+  assert.equal(backs('It is 3x faster', 'job A ran 3× faster'), true);                   // x and × are the same sign
+  assert.equal(backs('It is 3× faster', 'job A ran 3X faster'), true);
+  assert.equal(backs('It is 3x faster', '3x on job A'), true);                            // at the start of the fact
+  assert.equal(backs('It is 3x faster', 'job A ran 13x faster'), false);                  // a longer number
+  assert.equal(backs('It is 3x faster', 'job A ran 3.5x faster'), false);                 // a decimal
+  assert.equal(backs('It is 3x faster', 'job A ran 1.3x faster'), false);                 // a decimal's tail
+  assert.equal(backs('It is 3x faster', 'job A ran 1,3x faster'), false);                 // a decimal comma's tail
+  assert.equal(backs('It is 3x faster', 'a 3x3 grid'), false);
+  assert.equal(backs('It is 3x faster', 'cut review time 30% on one team'), false);
+  assert.equal(backs('It is 2.5x faster', 'ran 2.5x faster'), true);
+  assert.equal(backs('It is 2.5x faster', 'ran 215x faster'), false);                     // the dot is literal
+  assert.deepEqual(checkClaims('It is 3x faster', withFacts()).unbacked.map((u) => u.why), ['claims 3x but no receipt fact backs it']);
+  assert.deepEqual(checkClaims('It is 3x faster', withFacts('ran 3x faster')).backed.map((b) => b.why), ['a measured fact']);
+});
+
+test('extractClaims: the words a launch is announced in are live claims, named as written', () => {
+  for (const [text, word] of [['it is live', 'live'], ['Launched today!', 'Launched'], ['Released today.', 'Released'],
+    ['Rolled out to everyone.', 'Rolled out'], ['Out now.', 'Out now'], ['Now available to all.', 'Now available'],
+    ['Available now.', 'Available now'], ['Now generally available.', 'generally available'], ['We shipped it', 'shipped'],
+    ['deployed on Monday', 'deployed'], ['running in production', 'in production']]) {
+    assert.equal(liveWord(text), word, text);
+  }
+  for (const text of ['the release notes', 'launching soon', 'available on request', 'a new release', 'outnow']) {
+    assert.equal(liveWord(text), undefined, text);
+  }
+  const dark = { ...RECEIPT, live: false };
+  for (const text of ['Launched today!', 'Out now.', 'Now generally available.', 'Released today.', 'Rolled out to all customers.']) {
+    assert.equal(checkClaims(text, dark).ok, false, text);
+    assert.equal(checkClaims(text, RECEIPT).ok, true, text);
+  }
+});
+
+test('extractClaims: the ways a passing build is announced are CI claims, and every status claim is named as written', () => {
+  const word = (text, type) => (extractClaims(text).find((c) => c.type === type) || {}).raw;
+  for (const [text, w] of [['CI green.', 'CI green'], ['CI is green.', 'CI is green'], ['CI passed.', 'CI passed'],
+    ['CI is passing.', 'CI is passing'], ['CI passes.', 'CI passes'], ['CI succeeded.', 'CI succeeded'], ['CI was green', 'CI was green'],
+    ['All checks passed.', 'checks passed'], ['every check passes', 'check passes'], ['All tests pass.', 'tests pass'],
+    ['Tests are green.', 'Tests are green'], ['the test passed', 'test passed'], ['The build is passing.', 'build is passing'],
+    ['Build passing.', 'Build passing'], ['Build green.', 'Build green'], ['the build succeeded', 'build succeeded'],
+    ['green on the GitHub runner', 'green on the GitHub runner']]) {
+    assert.equal(word(text, 'ci'), w, text);
+  }
+  for (const text of ['a green build of the logo', 'the CI pipeline', 'tests are planned', 'the checkout passed review', 'green energy', 'the contest passed']) {
+    assert.equal(word(text, 'ci'), undefined, text);
+  }
+  for (const [text, w] of [['witness-clean', 'witness-clean'], ['Mutation clean', 'Mutation clean'], ['gate-clean', 'gate-clean'],
+    ['provably correct', 'provably'], ['fully verified', 'verified']]) {
+    assert.equal(word(text, 'clean'), w, text);
+  }
+  const failed = { ...RECEIPT, ci: 'failure' };
+  for (const text of ['CI passed.', 'All checks passed.', 'The build is passing.', 'Tests are green.', 'CI succeeded.']) {
+    assert.equal(checkClaims(text, failed).ok, false, text);
+    assert.equal(checkClaims(text, RECEIPT).ok, true, text);
+  }
+});
+
 test('checkClaims: a foreign url is backed once whitelisted as a link fact', () => {
   assert.equal(checkClaims('see https://eur-lex.europa.eu/eli/reg/2024/1689/oj', RECEIPT).ok, true);
   assert.equal(checkClaims('see https://random.example/x', RECEIPT).ok, false);
@@ -360,6 +498,18 @@ test('kill: verifyPostLedger catches a STRING entry with an honest hash (the !is
   const v = verifyPostLedger([chain[0], strItem]);
   assert.equal(v.valid, false);
   assert.equal(v.brokenAt, 1);
+});
+
+// 2026-11-05, the fifth buyer walk: 100,000 digits in a row took 44 s to read (a percent could start at every digit of the
+// run, each scanning to its end), and "green on " repeated grew the same way: a garbage or hostile post could stall a CI job.
+test('extractClaims reads hostile input in linear time', () => {
+  for (const text of ['9'.repeat(100000), '9'.repeat(100000) + 'x', '9'.repeat(100000) + '%', 'green on '.repeat(20000),
+    ('1 / ').repeat(25000), ('1.').repeat(50000), ('1,000').repeat(20000)]) {
+    const t0 = Date.now();
+    extractClaims(text);
+    assert.ok(Date.now() - t0 < 2000, text.slice(0, 12) + '… (' + text.length + ' chars) took ' + (Date.now() - t0) + ' ms');
+  }
+  assert.deepEqual(pcts('9'.repeat(5000) + '%').map((p) => p[0].length), [5001]);         // a long percent is still read whole
 });
 
 test('fuzz: pure and total — garbage never throws', () => {

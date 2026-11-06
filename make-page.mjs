@@ -61,7 +61,7 @@ const facts = {
   'claim.types': CLAIM_TYPES.length,
   'refuse.checked': RO.report.checked, 'refuse.unbacked': RU.length, 'refuse.backed': RO.report.backed.length,
   'refuse.verdict': RO.report.verdict, 'refuse.exit': RO.exitCode,
-  'refuse.url': ofType(RU, 'url'), 'refuse.score': ofType(RU, 'score'), 'refuse.pct': ofType(RU, 'pct'),
+  'refuse.url': ofType(RU, 'url'), 'refuse.score': ofType(RU, 'score'), 'refuse.pct': ofType(RU, 'pct'), 'refuse.mult': ofType(RU, 'mult'),
   'refuse.live': ofType(RU, 'live'), 'refuse.clean': ofType(RU, 'clean'), 'refuse.ci': ofType(RU, 'ci'),
   'refuse.r.live': String(RF.receipt.live), 'refuse.r.ci': String(RF.receipt.ci),
   'refuse.r.witness': RF.receipt.witness.killed + '/' + RF.receipt.witness.total + (RF.receipt.witness.clean ? ', clean' : ', not clean'),

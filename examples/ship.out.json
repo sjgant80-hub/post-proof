@@ -24,12 +24,12 @@
       },
       {
         "type": "ci",
-        "claim": "ci-green",
+        "claim": "CI green",
         "why": "ci concluded success"
       },
       {
         "type": "clean",
-        "claim": "verified",
+        "claim": "witness-clean",
         "why": "the witness is clean"
       }
     ],

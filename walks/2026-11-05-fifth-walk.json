@@ -1,0 +1,98 @@
+{
+ "kind": "post-proof.buyer-walk",
+ "v": 1,
+ "date": "2026-11-05",
+ "finished": "2026-11-06",
+ "page": {
+  "url": "https://sjgant80-hub.github.io/post-proof/",
+  "commit": "dfe386e",
+  "servedSha256": "88d983237e4a2fae4a69d3731de58f3c859358c565cd1637150381d985725fb4",
+  "note": "the page as GitHub Pages served it (HTTP 200) after the fourth walk, byte for byte the committed index.html of dfe386e; read rendered in a browser tab of its own, scripts running"
+ },
+ "method": [
+  "Fifth walk, because the fourth walk's fixes changed the page. Kar read the served page cold as the same four buyers, pressed every button (both drafts, gate, seal before and after a draft, tamper, ledger before and after it was built, flip), read every cost figure and checked each against its basis entry by hand.",
+  "As the CTO and the COO, Kar drove the gate with release notes written the way people write them, against receipts with live true and false and ci success and failure: 21 drafts first (dates, ratings, multipliers, certifications, launch words, \"24/7\"), then 7 launch phrasings with live false, then 10 link forms (Markdown, HTML, quotes, end punctuation), then 22 CI and verified phrasings with ci failure, then hostile input (100,000 digits; \"green on \" repeated) timed against the kernel of dfe386e and against the fix.",
+  "Every statement a buyer would rely on was checked against the code it describes (kernel.mjs, cli.mjs, scripts/claim-receipt-gate.mjs, make-zip.mjs, costcase.mjs, LICENSE), the vendored basis against the file in liveware it names (cmp: identical), and CI run 42090845034 of dfe386e for the mutation gate on the runner (90/92 and 28/28, clean).",
+  "Each fault got a test first, run against the old kernel and seen to fail, then the fix. No local-model pass this time: the first walk's local qwen2.5:7b outputs are kept in the 2026-11-04 record; this pass needed the gate driven and claims checked against code."
+ ],
+ "personas": {
+  "CFO": "CFO of a 400-person UK software company; approves spend; hates unsourced numbers and vague savings.",
+  "CTO-CISO": "CTO and acting CISO of a UK fintech; data leaving the building, supply chain, determinism, truth of security claims.",
+  "COO": "COO of a UK SaaS company with 12 product teams publishing weekly release notes; process, roll-out effort, staff change.",
+  "Procurement": "Procurement lead at a UK public-sector body; supplier, terms, support, licence, exit, data protection, hidden costs."
+ },
+ "held": [
+  "served page = committed index.html of dfe386e byte for byte (SHA-256 above), HTTP 200; no resource request after the page itself (the browser's resource timing list was empty)",
+  "every button worked: hyped draft REFUSED 3 of 6, honest draft PASS 5 of 5; the seal refused the failed draft, sealed the honest one and broke under the tamper; the ledger asked to be built first, then held 2 entries and broke at #1 on the flip",
+  "the cost table at the example inputs, by hand: 520 posts x 15 min = 130 h x GBP 19.67 = GBP 2,557.10; seats 2 x 12 x GBP 23.10 = GBP 554.40; Claude Sonnet 5 520 x (3000 x 2 + 500 x 10) / 1e6 USD x 0.75396 = GBP 4.31; Bedrock GBP 0.45; three years at 3.1% CPI GBP 7,911.57; the gate GBP 4,034.46 with the GBP 78.68 set-up; saving GBP 3,877.11; payback ceil(78.68 x 52 / 1,278.55) = 4 weeks",
+  "vendor/sovereign-enterprise/data/basis.json is byte for byte the file in liveware the brief names (SHA-256 83e9c2ef...), and every figure on the page shows its value, unit and source link",
+  "supplier, support terms, MIT, exit, data protection and the copyright holder (LICENSE: Simon Gant) as stated; the Konomi credit in the footer; no price of ours anywhere; the Agensi package still carries no credit"
+ ],
+ "gaps": [
+  {
+   "from": "COO",
+   "gap": "A date was refused as a score: \"Released on 5/11/2026.\" REFUSED, unbacked \"5/11\"; \"2026/11/05\" the same. Release notes are full of dates.",
+   "done": "fixed in kernel.mjs: a K/N with a third part (a/b/c, spaces allowed) is a date or a path, not a score, on the draft side and in a fact. Test fails on the old kernel, passes on the new."
+  },
+  {
+   "from": "CTO-CISO",
+   "gap": "\"Rated 4.9/5\" was reported as the claim \"9/5\", words nobody wrote, and no fact could back it (a fact saying \"4.9/5\" did not match).",
+   "done": "fixed: a decimal score is read whole and backed only by a fact stating it as written (\"4.9/5\"; \"11/05\" by \"11/05\"). The witness still backs a whole score at its exact killed/total."
+  },
+  {
+   "from": "CTO-CISO",
+   "gap": "\"3x faster\" (in the page's own hyped draft) and \"10× faster\" were not read at all.",
+   "done": "fixed: a seventh claim kind, mult: \"3x\", \"3X\", \"10×\", \"10 ×\", \"2.5x\", \"1,000x\" are claims, backed only by a fact stating the same multiplier; \"1920x1080\", \"0x1F\", \"3×3\", \"v3x\" are not read. The hyped demo is now REFUSED on 4 of 7."
+  },
+  {
+   "from": "CTO-CISO",
+   "gap": "Against a receipt with live false, \"Launched today!\", \"Released today.\", \"Rolled out to all customers.\", \"Out now.\", \"Now available to everyone.\" and \"Now generally available.\" all SHIPPED. Only \"We are live.\" was refused.",
+   "done": "fixed: launched, released, rolled out, out now, now available, available now and generally available are live claims; the claim is named as written (\"Launched\"), not as a fixed token."
+  },
+  {
+   "from": "CTO-CISO",
+   "gap": "Against a receipt with ci failure, \"CI passed.\", \"CI is passing.\", \"CI passes.\", \"All checks passed.\", \"The build is passing.\", \"Build passing.\", \"Tests are green.\", \"The build is green.\" and \"CI succeeded.\" all SHIPPED: the page's own example of an overclaim.",
+   "done": "fixed: each is a CI claim. The CI and verified claims are now named as written too (\"CI green\", \"witness-clean\"), so examples/ship.out.json changed in exactly those two claim fields; refuse.out.json is unchanged and the seal is unchanged."
+  },
+  {
+   "from": "CTO-CISO",
+   "gap": "A link's own path was read as other claims: \"reg/2024/1689\" inside the EU AI Act link in the demo receipt was a score, backed only because the link fact contained it; a link ending \"/deployed\" would have been a live claim.",
+   "done": "fixed: a link is one claim and the rest of the text is read with every link blanked out."
+  },
+  {
+   "from": "COO",
+   "gap": "A true release note in Markdown or HTML was refused: \"<https://example.org/app>\", an href=\"...\", a quoted link and a link before \"!\" or \"?\" were read with the bracket, quote or mark, and the report showed a garbled link.",
+   "done": "fixed: < > \" and the backtick end a link (they cannot stand in one unencoded, RFC 3986); a trailing ! ? ... or closing quote is dropped like the full stop. A query string and a quote inside a link are kept."
+  },
+  {
+   "from": "CTO-CISO",
+   "gap": "Hostile input: 100,000 digits in a row took 43.8 s to read (33.3 s in the test run), quadratic, already so in the kernel of dfe386e (20,000 digits 1.3 s); \"green on \" repeated grew the same way. A garbage post could stall a CI job.",
+   "done": "fixed: a percent never starts inside a run of digits, and \"green on ... runner\" allows at most 80 characters between. A million digits now read in 12 ms. A test holds every hostile shape under 2 s."
+  },
+  {
+   "from": "CTO-CISO",
+   "gap": "\"SOC 2 certified\", \"GDPR compliant\" and \"independently audited\" pass unread; the page did not say so.",
+   "done": "stated: in Risks, the compliance card, a new CISO answer, SKILL.md and the README. Not a claim a build probe can prove, so not read by design."
+  },
+  {
+   "from": "COO",
+   "gap": "\"24/7 support\" and a date without a year (\"11/05\") are refused as K/N scores; they cannot be told apart from a score.",
+   "done": "stated with the fix a writer applies: back \"24/7\" with a fact, write the date with its year or the month's name (Risks, the COO answer, SKILL.md, README)."
+  },
+  {
+   "from": "COO",
+   "gap": "The language answer said percentages are checked in any language; \"percent\" is matched in English only.",
+   "done": "restated: links, K/N, \"%\" and multipliers in any language; the status words and \"percent\" in English only."
+  }
+ ],
+ "result": {
+  "tests": "72 tests in kernel.test.mjs, costcase.test.mjs and page.test.mjs, plus skill.test.mjs running the shipped script alone on the examples; all pass",
+  "kernelTests": 54,
+  "witness": "witness v0.6 uncapped on kernel.mjs: 96/98 killed, 0 survivors, 2 reviewed equivalents baselined with their existing written reasons (kernel fb5ec786e486)"
+ },
+ "notFixedHere": [
+  "Standard terms, an SLA and a warranty are still \"agreed per deployment\": publishing standard terms is Simon's decision, not invented here.",
+  "si-didy-loop vendors an earlier copy of kernel.mjs (receiptgate.mjs); that is another repository, left for its own update.",
+  "The Agensi ZIP copied to agensi-listings/zips/ predates these changes; the package CI builds now differs. Re-copying it, and the listing itself, belong to the shop build and are Simon's."
+ ]
+}

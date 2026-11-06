@@ -42,9 +42,12 @@ refuses anything the proof doesn't back.
 ## What it does
 
 - **gatePost(post, receipt)** — extracts the *checkable* claims from a draft (URLs, K/N witness
-  scores, "CI green", "live", percentages) and refuses any the build-receipt doesn't back, naming
-  each one. A number that isn't a score or a percent ("seven layers") is left alone. **No model
-  grades the copy.**
+  scores, "CI green" (and "CI passed", "all checks passed", "the build is passing"), "live" and the words a launch
+  is announced in ("launched", "out now", "now available"),
+  percentages, multipliers such as "3x") and refuses any the build-receipt doesn't back, naming
+  each one, as written. A number that isn't a score, a percent or a multiplier ("seven layers"), a date ("5/11/2026")
+  and a link's own path are left alone; a link in Markdown or HTML is read without its brackets or quotes. It reads
+  hostile input in linear time. **No model grades the copy.**
 - **makePostReceipt / verifyPostReceipt** — a passed post seals a content-addressed receipt (the
   post's hash + the build-receipt's hash + the backed claims). It verifies anywhere, and the gate
   **refuses to seal a post that failed**.
@@ -90,7 +93,10 @@ judge tone (the one-line "what it does" rides on trust, capped and visible). Tam
 design**: the seals and the ledger show any change, not who sealed them; proving that needs a key, and this tool needs none
 (sign the sealed post-receipt with your existing release-signing key if you must). A fact backs a percent or a K/N score
 only when it states the same whole number ("3%" is not backed by "30%", nor "1/4" by "11/40"). A score or percent of any
-length is read ("1000%", "12345/12345"), and a percent written "70 percent" too; numbers written as words are not. You bring the receipt (the
+length is read ("1000%", "12345/12345"), and a percent written "70 percent" too, and a multiplier ("3x", "10×") is backed the
+same way ("3x" is not backed by "13x" or "3.5x"); numbers written as words ("twice", "tenfold") are not. A date with its year is
+not a score, but "24/7" and a date without a year ("11/05") read as K/N scores and need a fact. Certification and compliance
+claims ("SOC 2 certified", "GDPR compliant") are not read: no build probe can prove them. You bring the receipt (the
 probes live in the rail's runner). (In our own pipeline the rail's live send to a real page also needs the owner's one-time channel connect;
 that is the rail's, not this gate's.) Not audited. Mutation-witnessed in CI (survivors carry a written equivalence
 argument). MIT.

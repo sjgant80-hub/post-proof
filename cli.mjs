@@ -1,7 +1,7 @@
 // cli.mjs — claim-receipt-gate on the command line. build-skill.mjs bundles this with kernel.mjs (the same
 // logic the live page runs) into scripts/claim-receipt-gate.mjs, the single file the Agensi skill runs.
 // It reads a draft post and the build-receipt behind it, pulls out every checkable claim (links, "live",
-// "CI green", "verified", K/N scores, percents) and says which ones the receipt backs. No model in the loop.
+// "CI green", "verified", K/N scores, percents, multipliers) and says which ones the receipt backs. No model in the loop.
 // Exit 0 = SHIP (every checkable claim backed) · 1 = REFUSE · 2 = the input could not be used · 3 = an internal error.
 import { readFileSync } from 'node:fs';
 import { gatePost, makePostReceipt, receiptValid } from './kernel.mjs';
