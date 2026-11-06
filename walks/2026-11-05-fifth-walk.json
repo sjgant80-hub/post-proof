@@ -94,5 +94,16 @@
   "Standard terms, an SLA and a warranty are still \"agreed per deployment\": publishing standard terms is Simon's decision, not invented here.",
   "si-didy-loop vendors an earlier copy of kernel.mjs (receiptgate.mjs); that is another repository, left for its own update.",
   "The Agensi ZIP copied to agensi-listings/zips/ predates these changes; the package CI builds now differs. Re-copying it, and the listing itself, belong to the shop build and are Simon's."
- ]
+ ],
+ "afterFix": {
+  "commit": "fc13a8a",
+  "ci": "https://github.com/sjgant80-hub/post-proof/actions/runs/42135890959 (success: 80 tests, witness v0.6 96/98 and 28/28 clean on the runner, matching the committed receipts; the page fixpoint held; the ZIP SHA-256 equals the local build)",
+  "servedSha256": "94b72df96c1d5af023b9325d45bb29a2bce44d8f1aa854b945ed5b4e1ea48917",
+  "checked": [
+   "the served page is the committed index.html of fc13a8a byte for byte, HTTP 200; the page says 7 kinds of claim and 96 of 98 mutants, both filled from the repository",
+   "every button under the new Content-Security-Policy: hyped draft REFUSED 4 of 7 (the url, 200/200, 100%, 3x), honest draft PASS 5 of 5; seal refused the failed draft, sealed the honest one, broke under the tamper; ledger valid with 2 entries, broken at #1 on the flip; an out-of-range share answered 0% to 100%",
+   "a draft of the kinds this walk found, against the demo receipt: \"Released on 5/11/2026: CI passed, rated 4.9/5, 3x faster. See <https://sjgant80-hub.github.io/agent-proof/>.\" read 5 claims: the link backed, Released and CI passed backed as written, 4.9/5 and 3x refused; the date left alone",
+   "at 375px: no horizontal scroll, no diagram text past its box; no console errors; no request after the page itself"
+  ]
+ }
 }
